@@ -1,0 +1,132 @@
+{
+  "data_science": [
+    {
+      "q": "Explain bias-variance tradeoff.",
+      "keywords": [
+        "bias",
+        "variance",
+        "overfitting",
+        "underfitting",
+        "complexity",
+        "generalization"
+      ]
+    },
+    {
+      "q": "What is cross-validation and why is it used?",
+      "keywords": [
+        "k-fold",
+        "validation",
+        "train",
+        "test",
+        "overfitting",
+        "hyperparameters"
+      ]
+    },
+    {
+      "q": "Difference between classification and regression.",
+      "keywords": [
+        "classification",
+        "regression",
+        "continuous",
+        "categorical",
+        "supervised"
+      ]
+    }
+  ],
+  "python": [
+    {
+      "q": "What are Python lists vs tuples?",
+      "keywords": [
+        "list",
+        "tuple",
+        "mutable",
+        "immutable",
+        "indexing"
+      ]
+    },
+    {
+      "q": "Explain list comprehensions with an example.",
+      "keywords": [
+        "list",
+        "comprehension",
+        "for",
+        "if",
+        "expression"
+      ]
+    },
+    {
+      "q": "What is a virtual environment and why use it?",
+      "keywords": [
+        "venv",
+        "dependencies",
+        "isolation",
+        "pip"
+      ]
+    }
+  ],
+  "sql": [
+    {
+      "q": "What is the difference between INNER JOIN and LEFT JOIN?",
+      "keywords": [
+        "inner",
+        "left",
+        "join",
+        "null",
+        "matching"
+      ]
+    },
+    {
+      "q": "How do GROUP BY and HAVING differ?",
+      "keywords": [
+        "group by",
+        "having",
+        "aggregate",
+        "filter"
+      ]
+    },
+    {
+      "q": "Write a query to find top 3 highest salaries.",
+      "keywords": [
+        "order",
+        "limit",
+        "desc",
+        "salary",
+        "top"
+      ]
+    }
+  ],
+  "cloud": [
+    {
+      "q": "Explain IaaS vs PaaS vs SaaS.",
+      "keywords": [
+        "iaas",
+        "paas",
+        "saas",
+        "managed",
+        "infrastructure",
+        "platform",
+        "software"
+      ]
+    },
+    {
+      "q": "What is auto-scaling and why is it important?",
+      "keywords": [
+        "autoscaling",
+        "scalability",
+        "load",
+        "instances",
+        "cost"
+      ]
+    },
+    {
+      "q": "Describe the concept of regions and zones.",
+      "keywords": [
+        "region",
+        "zone",
+        "availability",
+        "latency",
+        "redundancy"
+      ]
+    }
+  ]
+}
