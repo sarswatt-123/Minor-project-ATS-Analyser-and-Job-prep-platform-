@@ -392,7 +392,7 @@ if st.session_state.user_email and st.session_state.user_name:
         try:
             resume_hist, jd_hist = get_user_history(st.session_state.user_email)
             
-            st.markdown("**📈 Recent Activity**")
+            st.markdown("📈 Recent Activity**")
             if resume_hist:
                 latest = resume_hist[0]
                 st.markdown(f"🔸 Last Resume: {latest.get('ats_score', 'N/A')}%")
@@ -497,7 +497,7 @@ elif choice == "📂 Resume Analyzer":
     
     # Check if user is logged in
     if not st.session_state.user_email:
-        st.warning("⚠️ Please register first from the Home page to use this feature.")
+        st.warning("⚠ Please register first from the Home page to use this feature.")
         st.stop()
 
     if not st.session_state.subscribed and st.session_state.resume_uploads >= 1:
@@ -600,7 +600,7 @@ elif choice == "📂 Resume Analyzer":
 elif choice == "📄 JD Matcher":
     # Check if user is logged in
     if not st.session_state.user_email:
-        st.warning("⚠️ Please register first from the Home page to use this feature.")
+        st.warning("⚠ Please register first from the Home page to use this feature.")
         st.stop()
 
     # Initialize session state counter
@@ -873,7 +873,7 @@ elif choice == "💳 Subscription":
         with col1:
             monthly_selected = st.button(
                 """
-                📅 **Monthly Plan**
+                📅 *Monthly Plan*
                 ₹199/month
                 • Unlimited Resume Analysis
                 • Unlimited JD Matching
@@ -885,7 +885,7 @@ elif choice == "💳 Subscription":
         with col2:
             yearly_selected = st.button(
                 """
-                🏆 **Yearly Plan**
+                🏆 *Yearly Plan*
                 ₹999/year
                 • Everything in Monthly
                 • Save ₹1389 per year
@@ -939,16 +939,16 @@ elif choice == "💳 Subscription":
                     # Manual UPI Details
                     st.markdown(
                         f"""
-                        **📋 Manual Payment Details:**
-                        - **UPI ID:** `{upi_id}`
-                        - **Amount:** ₹{amount}
-                        - **Order ID:** `{order_id}`
+                        *📋 Manual Payment Details:*
+                        - *UPI ID:* {upi_id}
+                        - *Amount:* ₹{amount}
+                        - *Order ID:* {order_id}
                         
-                        *Please include Order ID in payment description*
+                        Please include Order ID in payment description
                         """)
                 
                 with col2:
-                    st.markdown("### ⏱️ Payment Status")
+                    st.markdown("### ⏱ Payment Status")
                     
                     # Payment verification section
                     if st.button("🔄 Check Payment Status"):
@@ -964,7 +964,7 @@ elif choice == "💳 Subscription":
                     st.markdown("---")
                     
                     # Demo purpose - Manual completion button
-                    st.markdown("**🧪 For Demo Purpose:**")
+                    st.markdown("🧪 For Demo Purpose:")
                     if st.button("✅ Mark Payment as Complete"):
                         if complete_payment(order_id):
                             st.success("🎉 Payment Successful! Premium activated!")
@@ -976,7 +976,7 @@ elif choice == "💳 Subscription":
                     # Payment Instructions
                     st.markdown(
                         """
-                        **📝 Payment Instructions:**
+                        *📝 Payment Instructions:*
                         1. Scan QR code with any UPI app
                         2. Enter amount: ₹{}
                         3. Add Order ID in remarks
@@ -1006,7 +1006,7 @@ elif choice == "💳 Subscription":
 # ================== PROFILE SECTION ==================
 elif choice == "👤 Profile":
     if not st.session_state.user_email:
-        st.warning("⚠️ Please register first from the Home page to view your profile.")
+        st.warning("⚠ Please register first from the Home page to view your profile.")
         st.stop()
     
     st.header(f"👤 {st.session_state.user_name}'s Profile")
@@ -1063,21 +1063,21 @@ elif choice == "👤 Profile":
         
         with col1:
             st.subheader("📋 Account Details")
-            st.write(f"**Name:** {user_info.get('name', 'N/A')}")
-            st.write(f"**Email:** {user_info.get('email', 'N/A')}")
-            st.write(f"**Phone:** {user_info.get('phone', 'N/A')}")
-            st.write(f"**Joined:** {user_info.get('registration_date', 'N/A')}")
+            st.write(f"*Name:* {user_info.get('name', 'N/A')}")
+            st.write(f"*Email:* {user_info.get('email', 'N/A')}")
+            st.write(f"*Phone:* {user_info.get('phone', 'N/A')}")
+            st.write(f"*Joined:* {user_info.get('registration_date', 'N/A')}")
         
         with col2:
             st.subheader("💎 Subscription Status")
             status = user_info.get('subscription_status', 'free')
             if status == 'premium':
                 expiry = user_info.get('subscription_expiry')
-                st.success("🔓 **Premium Active**")
+                st.success("🔓 *Premium Active*")
                 if expiry:
-                    st.write(f"**Expires:** {expiry.strftime('%d %b %Y')}")
+                    st.write(f"*Expires:* {expiry.strftime('%d %b %Y')}")
             else:
-                st.info("🔒 **Free Plan**")
+                st.info("🔒 *Free Plan*")
                 st.write("Upgrade to unlock unlimited features!")
         
         # Payment History
@@ -1087,12 +1087,12 @@ elif choice == "👤 Profile":
                 with st.expander(f"₹{payment.get('amount', 0)} - {payment.get('payment_date', 'N/A')}"):
                     col1, col2 = st.columns(2)
                     with col1:
-                        st.write(f"**Amount:** ₹{payment.get('amount', 0)}")
-                        st.write(f"**Method:** {payment.get('payment_method', 'N/A')}")
-                        st.write(f"**Status:** ✅ {payment.get('status', 'N/A').title()}")
+                        st.write(f"*Amount:* ₹{payment.get('amount', 0)}")
+                        st.write(f"*Method:* {payment.get('payment_method', 'N/A')}")
+                        st.write(f"*Status:* ✅ {payment.get('status', 'N/A').title()}")
                     with col2:
-                        st.write(f"**Plan:** {payment.get('subscription_type', 'N/A').title()}")
-                        st.write(f"**Date:** {payment.get('payment_date', 'N/A')}")
+                        st.write(f"*Plan:* {payment.get('subscription_type', 'N/A').title()}")
+                        st.write(f"*Date:* {payment.get('payment_date', 'N/A')}")
         
         # Recent Activity
         st.subheader("📊 Recent Activity")
@@ -1106,11 +1106,11 @@ elif choice == "👤 Profile":
                 if resume_history:
                     for i, record in enumerate(resume_history):
                         with st.expander(f"Analysis #{i+1} - Score: {record.get('ats_score', 'N/A')}%"):
-                            st.write(f"**Date:** {record.get('analysis_date', 'N/A')}")
-                            st.write(f"**File:** {record.get('filename', 'N/A')}")
-                            st.write(f"**ATS Score:** {record.get('ats_score', 'N/A')}%")
+                            st.write(f"*Date:* {record.get('analysis_date', 'N/A')}")
+                            st.write(f"*File:* {record.get('filename', 'N/A')}")
+                            st.write(f"*ATS Score:* {record.get('ats_score', 'N/A')}%")
                             if record.get('ai_feedback'):
-                                st.write("**AI Feedback:**")
+                                st.write("*AI Feedback:*")
                                 st.info(record['ai_feedback'][:200] + "..." if len(record['ai_feedback']) > 200 else record['ai_feedback'])
                 else:
                     st.write("No resume analysis found. Upload a resume to get started!")
@@ -1119,11 +1119,11 @@ elif choice == "👤 Profile":
                 if jd_history:
                     for i, record in enumerate(jd_history):
                         with st.expander(f"Match #{i+1} - Score: {record.get('similarity_score', 'N/A')}%"):
-                            st.write(f"**Date:** {record.get('matching_date', 'N/A')}")
-                            st.write(f"**Similarity:** {record.get('similarity_score', 'N/A')}%")
+                            st.write(f"*Date:* {record.get('matching_date', 'N/A')}")
+                            st.write(f"*Similarity:* {record.get('similarity_score', 'N/A')}%")
                             
                             if record.get('missing_skills'):
-                                st.write("**Missing Skills:**")
+                                st.write("*Missing Skills:*")
                                 missing_skills_html = " ".join([
                                     f"<span style='background-color:#f44336;color:white;padding:3px 8px;margin:2px;border-radius:4px;font-size:12px;'>{skill}</span>"
                                     for skill in record['missing_skills']
@@ -1155,7 +1155,7 @@ elif choice == "ℹ About Us":
                 <li>💡 <strong>Google Gemini AI:</strong> Provides advanced career suggestions and personalized feedback.</li>
                 <li>📊 <strong>TF-IDF & Similarity Matching:</strong> Matches your resume with job descriptions to highlight key skills.</li>
                 <li>📂 <strong>File Processing:</strong> Extracts text from PDFs, DOCX, and TXT files for analysis.</li>
-                <li>🗄️ <strong>MongoDB Integration:</strong> Stores user data, resume analysis, and JD matching history.</li>
+                <li>🗄 <strong>MongoDB Integration:</strong> Stores user data, resume analysis, and JD matching history.</li>
             </ul>
             <h3 style="color: #FF9800;">👥 Developed By</h3>
             <p>This project is built with passion by:</p>
