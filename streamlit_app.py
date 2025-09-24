@@ -736,30 +736,435 @@ elif choice == "📄 JD Matcher":
             if not st.session_state.subscribed:
                 st.session_state.jd_uploads += 1
 
-# ================== MASTERCLASS ==================
+# ================== MASTERCLASS SECTION (Enhanced) ==================
 elif choice == "🎓 Masterclass":
-    st.header("🎓 Career Masterclasses")
-    st.write("Learn from industry experts. Explore our upcoming sessions:")
-
-    courses = [
-        {"title": "Crack Your First Data Analyst Job", "mentor": "Deloitte Expert", "link": "https://youtu.be/dMn2QFTyXUQ?si=SIKlONhrRiJIYrZk"},
-        {"title": "How to Build ATS-Friendly Resume", "mentor": "Google Recruiter", "link": "https://youtu.be/IIGWpw1FXhk?si=MS9FfmwqLWsMkA_k"},
-        {"title": "Ace Your Technical Interviews", "mentor": "Microsoft Engineer", "link": "https://youtu.be/vU3dL1cNqgQ?si=LLm5zA3HjGpTy1h2"}
+    # Custom CSS for enhanced styling
+    st.markdown("""
+    <style>
+    .masterclass-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px 20px;
+        border-radius: 20px;
+        text-align: center;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+    
+    .hero-title {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .hero-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 0;
+    }
+    
+    .course-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin: 15px 0;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        border-left: 5px solid;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .course-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    }
+    
+    .course-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(45deg, rgba(255,255,255,0.1), transparent);
+        border-radius: 0 0 0 100px;
+    }
+    
+    .data-science-card { border-left-color: #4CAF50; }
+    .resume-card { border-left-color: #2196F3; }
+    .interview-card { border-left-color: #FF9800; }
+    .ml-card { border-left-color: #9C27B0; }
+    .design-card { border-left-color: #F44336; }
+    .business-card { border-left-color: #00BCD4; }
+    
+    .course-title {
+        font-size: 1.4rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #333;
+    }
+    
+    .course-mentor {
+        color: #666;
+        font-size: 1rem;
+        margin-bottom: 8px;
+    }
+    
+    .course-duration {
+        color: #888;
+        font-size: 0.9rem;
+        margin-bottom: 15px;
+    }
+    
+    .course-badges {
+        margin-bottom: 15px;
+    }
+    
+    .badge {
+        display: inline-block;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        margin-right: 8px;
+        margin-bottom: 5px;
+    }
+    
+    .stats-container {
+        display: flex;
+        justify-content: space-around;
+        background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+        border-radius: 15px;
+        padding: 20px;
+        margin: 20px 0;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #667eea;
+        display: block;
+    }
+    
+    .stat-label {
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .category-filter {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 20px 0;
+    }
+    
+    .filter-btn {
+        background: linear-gradient(45deg, #e3f2fd, #bbdefb);
+        border: 2px solid transparent;
+        border-radius: 25px;
+        padding: 10px 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: #1976d2;
+        font-weight: 500;
+    }
+    
+    .filter-btn:hover {
+        background: linear-gradient(45deg, #1976d2, #1565c0);
+        color: white;
+        transform: scale(1.05);
+    }
+    
+    .ai-chat-box {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        padding: 25px;
+        margin-top: 30px;
+        color: white;
+    }
+    
+    .chat-input {
+        background: rgba(255,255,255,0.1);
+        border: 2px solid rgba(255,255,255,0.2);
+        border-radius: 15px;
+        color: white;
+        padding: 12px 15px;
+    }
+    
+    .chat-input::placeholder {
+        color: rgba(255,255,255,0.7);
+    }
+    
+    .premium-banner {
+        background: linear-gradient(45deg, #ffd700, #ffb300);
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        margin: 20px 0;
+        color: #333;
+        box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Hero Section
+    st.markdown("""
+    <div class="masterclass-hero">
+        <div class="hero-title">🎓 Career Masterclasses</div>
+        <div class="hero-subtitle">Learn from Industry Experts • Advance Your Career • Join 10,000+ Students</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Stats Section
+    st.markdown("""
+    <div class="stats-container">
+        <div class="stat-item">
+            <span class="stat-number">50+</span>
+            <span class="stat-label">Masterclasses</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number">10K+</span>
+            <span class="stat-label">Students Enrolled</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number">98%</span>
+            <span class="stat-label">Success Rate</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number">4.9★</span>
+            <span class="stat-label">Average Rating</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Category Filters
+    st.markdown("### 🎯 Explore by Category")
+    categories = ["All", "Data Science", "Resume & Career", "Interview Prep", "Tech Skills", "Design", "Business"]
+    
+    # Create filter buttons
+    filter_cols = st.columns(len(categories))
+    selected_category = "All"
+    
+    for idx, category in enumerate(categories):
+        with filter_cols[idx]:
+            if st.button(category, key=f"filter_{category}"):
+                selected_category = category
+    
+    # Enhanced Course Data with more variety
+    courses_data = [
+        {
+            "title": "Master Data Science from Scratch",
+            "mentor": "Senior Data Scientist @ Google",
+            "duration": "8 weeks • 32 hours",
+            "category": "Data Science",
+            "badges": ["Beginner Friendly", "Hands-on Projects", "Certificate"],
+            "rating": "4.9",
+            "students": "2.5K+",
+            "link": "https://youtu.be/dMn2QFTyXUQ?si=SIKlONhrRiJIYrZk",
+            "description": "Complete roadmap from Python basics to machine learning deployment",
+            "card_class": "data-science-card"
+        },
+        {
+            "title": "Build ATS-Winning Resumes",
+            "mentor": "HR Director @ Microsoft",
+            "duration": "4 weeks • 16 hours",
+            "category": "Resume & Career",
+            "badges": ["ATS Optimization", "Industry Templates", "1-on-1 Review"],
+            "rating": "4.8",
+            "students": "5.2K+",
+            "link": "https://youtu.be/IIGWpw1FXhk?si=MS9FfmwqLWsMkA_k",
+            "description": "Create resumes that pass ATS filters and impress recruiters",
+            "card_class": "resume-card"
+        },
+        {
+            "title": "Ace Technical Interviews",
+            "mentor": "Engineering Manager @ Amazon",
+            "duration": "6 weeks • 24 hours",
+            "category": "Interview Prep",
+            "badges": ["Live Mock Interviews", "System Design", "Coding Practice"],
+            "rating": "4.9",
+            "students": "3.8K+",
+            "link": "https://youtu.be/vU3dL1cNqgQ?si=LLm5zA3HjGpTy1h2",
+            "description": "Master coding interviews, system design, and behavioral questions",
+            "card_class": "interview-card"
+        },
+        {
+            "title": "Machine Learning Bootcamp",
+            "mentor": "AI Research Scientist @ Tesla",
+            "duration": "10 weeks • 40 hours",
+            "category": "Tech Skills",
+            "badges": ["Deep Learning", "Real Projects", "Industry Mentorship"],
+            "rating": "4.9",
+            "students": "1.9K+",
+            "link": "https://youtu.be/example1",
+            "description": "From basics to advanced ML algorithms and neural networks",
+            "card_class": "ml-card"
+        },
+        {
+            "title": "UI/UX Design Mastery",
+            "mentor": "Design Lead @ Airbnb",
+            "duration": "8 weeks • 32 hours",
+            "category": "Design",
+            "badges": ["Portfolio Projects", "Figma Expert", "User Research"],
+            "rating": "4.8",
+            "students": "2.7K+",
+            "link": "https://youtu.be/example2",
+            "description": "Create stunning user experiences with design thinking principles",
+            "card_class": "design-card"
+        },
+        {
+            "title": "Product Management Excellence",
+            "mentor": "VP Product @ Stripe",
+            "duration": "6 weeks • 24 hours",
+            "category": "Business",
+            "badges": ["Strategy Framework", "Case Studies", "Industry Network"],
+            "rating": "4.8",
+            "students": "1.5K+",
+            "link": "https://youtu.be/example3",
+            "description": "Learn product strategy, roadmapping, and stakeholder management",
+            "card_class": "business-card"
+        }
     ]
-
-    for course in courses:
-        with st.expander(course["title"]):
-            st.write(f"👨‍🏫 Mentor: {course['mentor']}")
-            st.write(f"🔗 [Watch Here]({course['link']})")
-            if st.button(f"Enroll: {course['title']}"):
-                st.success("✅ You have enrolled successfully!")
-
-    st.subheader("Ask AI about Career Guidance")
-    user_q = st.text_input("Ask your career-related question:")
-    if user_q:
-        ai_answer = gemini_insights(user_q)
-        st.info(ai_answer)
-
+    
+    # Filter courses based on selection
+    if selected_category == "All":
+        filtered_courses = courses_data
+    else:
+        filtered_courses = [course for course in courses_data if course["category"] == selected_category]
+    
+    # Display Premium Banner for non-subscribers
+    if not st.session_state.subscribed:
+        st.markdown("""
+        <div class="premium-banner">
+            <h3>🔓 Unlock All Masterclasses with Premium</h3>
+            <p>Get access to 50+ expert-led courses, certificates, and 1-on-1 mentoring sessions</p>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("🚀 Upgrade to Premium"):
+            st.session_state.page = "💎 Subscription"
+            st.rerun()
+    
+    # Course Cards
+    st.markdown(f"### 📚 {selected_category} Courses ({len(filtered_courses)} available)")
+    
+    for course in filtered_courses:
+        with st.container():
+            st.markdown(f"""
+            <div class="course-card {course['card_class']}">
+                <div class="course-title">{course['title']}</div>
+                <div class="course-mentor">👨‍🏫 {course['mentor']}</div>
+                <div class="course-duration">⏱️ {course['duration']} | ⭐ {course['rating']} | 👥 {course['students']} enrolled</div>
+                <div class="course-badges">
+                    {''.join([f'<span class="badge">{badge}</span>' for badge in course['badges']])}
+                </div>
+                <p style="color: #666; line-height: 1.6;">{course['description']}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Course Action Buttons
+            col1, col2, col3 = st.columns([2, 1, 1])
+            with col1:
+                if st.button(f"🎯 Enroll Now", key=f"enroll_{course['title']}"):
+                    st.success(f"✅ Successfully enrolled in '{course['title']}'!")
+                    st.balloons()
+            with col2:
+                if st.button("👀 Preview", key=f"preview_{course['title']}"):
+                    st.info(f"🎬 Opening preview for '{course['title']}'...")
+                    st.markdown(f"[🔗 Watch Preview]({course['link']})")
+            with col3:
+                if st.button("❤️ Wishlist", key=f"wishlist_{course['title']}"):
+                    st.success("Added to wishlist!")
+    
+    # Learning Path Recommendations
+    st.markdown("### 🛤️ Recommended Learning Paths")
+    
+    learning_paths = {
+        "💼 Career Switcher to Tech": ["Build ATS-Winning Resumes", "Master Data Science from Scratch", "Ace Technical Interviews"],
+        "🚀 Senior Professional Growth": ["Product Management Excellence", "Machine Learning Bootcamp", "UI/UX Design Mastery"],
+        "🎯 Job Interview Ready": ["Build ATS-Winning Resumes", "Ace Technical Interviews", "Master Data Science from Scratch"]
+    }
+    
+    for path_name, path_courses in learning_paths.items():
+        with st.expander(f"{path_name} (3 courses)"):
+            st.write("**Recommended sequence:**")
+            for i, course_title in enumerate(path_courses, 1):
+                st.write(f"{i}. {course_title}")
+            if st.button(f"Start Learning Path", key=f"path_{path_name}"):
+                st.success(f"🎉 Started learning path: {path_name}")
+    
+    # Enhanced AI Career Guidance
+    st.markdown("""
+    <div class="ai-chat-box">
+        <h3 style="margin-top: 0; margin-bottom: 20px;">🤖 AI Career Advisor</h3>
+        <p style="margin-bottom: 20px; opacity: 0.9;">Get personalized course recommendations and career guidance</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # AI Chat Interface
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        user_query = st.text_input(
+            "Ask your career question...", 
+            placeholder="e.g., 'I want to transition from marketing to data science. What courses should I take?'",
+            key="ai_career_chat"
+        )
+    with col2:
+        ask_ai = st.button("🚀 Ask AI", key="ask_ai_btn")
+    
+    if user_query and ask_ai:
+        with st.spinner("🧠 AI is thinking..."):
+            # Enhanced career guidance prompt
+            career_prompt = f"""
+            You are an expert career advisor with knowledge of industry trends and skill requirements.
+            Based on this question: "{user_query}"
+            
+            Provide:
+            1. Specific course recommendations from our catalog
+            2. Career roadmap with timeline
+            3. Industry insights and salary expectations
+            4. Skills to focus on
+            5. Networking and job search tips
+            
+            Be encouraging, specific, and actionable.
+            """
+            
+            ai_response = gemini_insights(career_prompt)
+            
+            st.markdown(f"""
+            <div style="background: linear-gradient(135deg, #e8f5e9, #c8e6c9); 
+                       border-radius: 15px; padding: 20px; margin: 15px 0;
+                       border-left: 5px solid #4CAF50;">
+                <h4 style="color: #2e7d32; margin-top: 0;">🎯 AI Career Advisor Says:</h4>
+                <div style="color: #333; line-height: 1.6;">{ai_response}</div>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    # Quick Action Buttons
+    st.markdown("### ⚡ Quick Actions")
+    action_cols = st.columns(4)
+    
+    with action_cols[0]:
+        if st.button("📅 Browse Schedule"):
+            st.info("📋 Upcoming sessions:\n• Data Science - Oct 15\n• Resume Workshop - Oct 18\n• Interview Prep - Oct 22")
+    
+    with action_cols[1]:
+        if st.button("🏆 View Certificates"):
+            st.success("🎓 Your earned certificates will appear here after course completion!")
+    
+    with action_cols[2]:
+        if st.button("👥 Join Community"):
+            st.info("💬 Join our Discord community with 5,000+ learners!")
+    
+    with action_cols[3]:
+        if st.button("📊 Track Progress"):
+            st.info("📈 Progress tracking available for enrolled students!")
 # ================== SUBSCRIPTION SECTION ==================
 elif choice == "💳 Subscription":
     st.markdown(
