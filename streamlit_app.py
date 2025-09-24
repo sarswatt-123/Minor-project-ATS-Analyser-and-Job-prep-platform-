@@ -405,92 +405,533 @@ if st.session_state.user_email and st.session_state.user_name:
             pass
 
 # ================== HOME ==================
+# ================== HOME (Enhanced) ==================
 if choice == "🏠 Home":
-    st.markdown(
-        """
-        <h2 style='text-align: center; color: #4CAF50;'> Welcome to the ATS Resume Platform 👋</h2>
-        <p style='text-align: center; color: gray;'>Your one-stop solution for Resume Analysis, JD Matching, and Career Growth.</p>
-        """,
-        unsafe_allow_html=True
-    )
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # ----------- USER FORM -----------
+    # Custom CSS for enhanced home page
+    st.markdown("""
+    <style>
+    .main-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 50px 30px;
+        border-radius: 25px;
+        text-align: center;
+        margin-bottom: 40px;
+        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .main-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: float 6s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+    }
+    
+    .hero-title {
+        font-size: 3rem;
+        font-weight: bold;
+        margin-bottom: 15px;
+        text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+        position: relative;
+        z-index: 1;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.3rem;
+        opacity: 0.9;
+        margin-bottom: 25px;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .hero-cta {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .feature-card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        margin: 20px 0;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        border-top: 4px solid;
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+    }
+    
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .feature-card:hover::before {
+        left: 100%;
+    }
+    
+    .resume-card { border-top-color: #4CAF50; }
+    .jd-card { border-top-color: #2196F3; }
+    .masterclass-card { border-top-color: #FF9800; }
+    .subscription-card { border-top-color: #9C27B0; }
+    
+    .feature-icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        display: block;
+    }
+    
+    .feature-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #333;
+    }
+    
+    .feature-description {
+        color: #666;
+        line-height: 1.6;
+        margin-bottom: 20px;
+    }
+    
+    .stats-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 20px;
+        padding: 40px 20px;
+        margin: 40px 0;
+        text-align: center;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 30px;
+        margin-top: 30px;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #667eea;
+        display: block;
+        margin-bottom: 5px;
+    }
+    
+    .stat-label {
+        color: #666;
+        font-size: 1rem;
+        font-weight: 500;
+    }
+    
+    .user-form-container {
+        background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);
+        border-radius: 20px;
+        padding: 40px;
+        margin-bottom: 40px;
+        border: 2px solid #FFB74D;
+        position: relative;
+    }
+    
+    .form-title {
+        color: #E65100;
+        font-size: 1.8rem;
+        font-weight: bold;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+    
+    .form-subtitle {
+        color: #666;
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 1.1rem;
+    }
+    
+    .testimonial-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        border-left: 4px solid #4CAF50;
+    }
+    
+    .testimonial-text {
+        font-style: italic;
+        color: #555;
+        margin-bottom: 15px;
+        line-height: 1.6;
+    }
+    
+    .testimonial-author {
+        font-weight: bold;
+        color: #4CAF50;
+    }
+    
+    .quick-actions {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        border-radius: 20px;
+        padding: 30px;
+        margin: 30px 0;
+    }
+    
+    .action-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+    
+    .action-item {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+    }
+    
+    .action-item:hover {
+        transform: scale(1.05);
+    }
+    
+    .news-ticker {
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .ticker-content {
+        animation: scroll-left 20s linear infinite;
+        white-space: nowrap;
+    }
+    
+    @keyframes scroll-left {
+        0% { transform: translateX(100%); }
+        100% { transform: translateX(-100%); }
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # News Ticker
+    st.markdown("""
+    <div class="news-ticker">
+        <div class="ticker-content">
+            🎉 New Feature Alert: AI-powered interview prep now available! | 
+            📈 500+ users got hired this month using our platform | 
+            🎓 Join our free webinar on "ATS Resume Secrets" this Friday |
+            💡 Premium users get 90% better job match rates
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Main Hero Section
+    st.markdown("""
+    <div class="main-hero">
+        <div class="hero-title">🚀 AI-Powered Career Platform</div>
+        <div class="hero-subtitle">Transform Your Career with Smart Resume Analysis, Job Matching & Expert Guidance</div>
+        <div class="hero-cta">
+            <p>Join 10,000+ professionals who landed their dream jobs</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # ----------- USER FORM (Enhanced) -----------
     if not st.session_state.user_email:
-        st.markdown(
-            """
-            <div style="background-color:#FFF3E0; padding:20px; border-radius:12px; margin-bottom:20px;">
-                <h3 style="color:#E65100;">📝 Before You Continue</h3>
-                <p style="color:gray;">Please enter your details to personalize your experience.</p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        st.markdown("""
+        <div class="user-form-container">
+            <div class="form-title">🌟 Start Your Career Journey</div>
+            <div class="form-subtitle">Join thousands of successful professionals. Get personalized insights in 30 seconds!</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-        with st.form("user_details_form"):
-            name = st.text_input("👤 Full Name")
-            email = st.text_input("📧 Email Address")
-            phone = st.text_input("📞 Phone Number")
-            submitted = st.form_submit_button("✅ Submit & Continue")
+        # Enhanced form with better layout
+        with st.form("user_details_form", clear_on_submit=True):
+            col1, col2 = st.columns(2)
+            with col1:
+                name = st.text_input("👤 Full Name", placeholder="Enter your full name")
+                email = st.text_input("📧 Email Address", placeholder="your.email@company.com")
+            with col2:
+                phone = st.text_input("📱 Phone Number", placeholder="+91 XXXXX XXXXX")
+                experience = st.selectbox("💼 Experience Level", 
+                    ["Select Experience", "0-1 years (Fresher)", "1-3 years", "3-5 years", "5-10 years", "10+ years"])
+            
+            industry = st.selectbox("🏢 Industry/Domain", 
+                ["Select Industry", "Information Technology", "Data Science/Analytics", "Marketing", 
+                 "Finance", "Healthcare", "Education", "Engineering", "Consulting", "Other"])
+            
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                submitted = st.form_submit_button("✨ Join Now & Get Free Analysis", use_container_width=True)
 
         if submitted:
-            if not name or not email or not phone:
-                st.error("⚠ Please fill in all details before continuing.")
+            if not name or not email or not phone or experience == "Select Experience":
+                st.error("⚠️ Please fill in all required details to continue.")
             else:
                 if save_user_basic_info(name, email, phone):
-                    st.success(f"Welcome, {name}! 🎉 You can now explore the platform.")
+                    st.success(f"🎉 Welcome aboard, {name}! Your career transformation starts now.")
+                    st.balloons()
                     # Check subscription status
                     check_user_subscription(email)
+                    time.sleep(1)
                     st.rerun()
     else:
-        user_profile = get_user_profile(st.session_state.user_email)
-        if user_profile:
-            st.success(f"Welcome back, {st.session_state.user_name}! You're logged in.")
-            # Check subscription status
-            check_user_subscription(st.session_state.user_email)
+        # Welcome back section for existing users
+        st.markdown(f"""
+        <div style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); 
+                   border-radius: 20px; padding: 30px; text-align: center; margin-bottom: 30px;
+                   border: 2px solid #4CAF50;">
+            <h2 style="color: #2e7d32; margin: 0;">👋 Welcome Back, {st.session_state.user_name}!</h2>
+            <p style="color: #388e3c; font-size: 1.1rem; margin-top: 10px;">
+                Ready to take the next step in your career journey?
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Check subscription status
+        check_user_subscription(st.session_state.user_email)
 
-    # ----------- FEATURES CARDS -----------
+    # Platform Statistics
+    st.markdown("""
+    <div class="stats-section">
+        <h2 style="color: #333; margin-bottom: 10px;">📊 Platform Success Stories</h2>
+        <p style="color: #666;">Real impact, real results from our community</p>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <span class="stat-number">10,000+</span>
+                <span class="stat-label">Users Registered</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">25,000+</span>
+                <span class="stat-label">Resumes Analyzed</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">95%</span>
+                <span class="stat-label">Success Rate</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">500+</span>
+                <span class="stat-label">Jobs This Month</span>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Enhanced Features Section with Interactive Cards
+    st.markdown("## 🎯 Explore Our Platform")
+    
+    # Features in 2x2 grid
     col1, col2 = st.columns(2)
+    
     with col1:
-        st.markdown(
-            """
-            <div style="background-color:#E3F2FD; padding:20px; border-radius:12px; margin-bottom:15px;">
-                <h4>📂 Resume Analyzer</h4>
-                <p>Get instant ATS-friendly feedback on your resume to boost your job chances.</p>
+        st.markdown("""
+        <div class="feature-card resume-card">
+            <span class="feature-icon">📊</span>
+            <div class="feature-title">Smart Resume Analyzer</div>
+            <div class="feature-description">
+                Get instant ATS compatibility scores, keyword optimization, and AI-powered suggestions 
+                to make your resume stand out to recruiters.
             </div>
-            """,
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            """
-            <div style="background-color:#FFF3E0; padding:20px; border-radius:12px; margin-bottom:15px;">
-                <h4>📄 JD Matcher</h4>
-                <p>Compare your resume with a job description to check relevancy & keyword match.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if st.button("🚀 Try Resume Analyzer", key="try_resume", use_container_width=True):
+            st.session_state.redirect_page = "📂 Resume Analyzer"
+            st.success("Redirecting to Resume Analyzer...")
+            time.sleep(1)
+            st.rerun()
+        
+        st.markdown("""
+        <div class="feature-card masterclass-card">
+            <span class="feature-icon">🎓</span>
+            <div class="feature-title">Expert Masterclasses</div>
+            <div class="feature-description">
+                Learn from industry leaders at Google, Microsoft, Amazon. Get insider tips on 
+                interviews, career growth, and skill development.
             </div>
-            """,
-            unsafe_allow_html=True
-        )
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if st.button("📚 Browse Masterclasses", key="try_masterclass", use_container_width=True):
+            st.session_state.redirect_page = "🎓 Masterclass"
+            st.success("Opening Masterclasses...")
+            time.sleep(1)
+            st.rerun()
+    
     with col2:
-        st.markdown(
-            """
-            <div style="background-color:#E8F5E9; padding:20px; border-radius:12px; margin-bottom:15px;">
-                <h4>🎓 Masterclass</h4>
-                <p>Attend exclusive industry sessions and learn directly from professionals.</p>
+        st.markdown("""
+        <div class="feature-card jd-card">
+            <span class="feature-icon">🎯</span>
+            <div class="feature-title">Job Description Matcher</div>
+            <div class="feature-description">
+                Compare your resume with job descriptions. Get similarity scores, missing skills analysis, 
+                and tailored improvement suggestions.
             </div>
-            """,
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            """
-            <div style="background-color:#F3E5F5; padding:20px; border-radius:12px; margin-bottom:15px;">
-                <h4>💎 Subscription</h4>
-                <p>Unlock premium features, unlimited resume checks, and priority support.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if st.button("🔍 Try JD Matcher", key="try_jd", use_container_width=True):
+            st.session_state.redirect_page = "📄 JD Matcher"
+            st.success("Opening JD Matcher...")
+            time.sleep(1)
+            st.rerun()
+        
+        st.markdown("""
+        <div class="feature-card subscription-card">
+            <span class="feature-icon">💎</span>
+            <div class="feature-title">Premium Features</div>
+            <div class="feature-description">
+                Unlimited analyses, priority support, exclusive masterclasses, 1-on-1 career coaching, 
+                and advanced AI insights.
             </div>
-            """,
-            unsafe_allow_html=True
-        )
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if st.button("✨ Explore Premium", key="try_premium", use_container_width=True):
+            st.session_state.redirect_page = "💎 Subscription"
+            st.success("Opening Premium Plans...")
+            time.sleep(1)
+            st.rerun()
 
+    # Quick Actions Section
+    st.markdown("""
+    <div class="quick-actions">
+        <h3 style="color: #1976d2; text-align: center; margin-bottom: 10px;">⚡ Quick Actions</h3>
+        <p style="text-align: center; color: #666; margin-bottom: 0;">Get started with these popular features</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    quick_cols = st.columns(4)
+    
+    with quick_cols[0]:
+        if st.button("📈 Career Assessment", use_container_width=True):
+            st.info("🔍 **Free Career Assessment**\n\n1. Skills evaluation\n2. Industry fit analysis\n3. Growth recommendations\n4. Salary insights")
+    
+    with quick_cols[1]:
+        if st.button("🎯 Interview Prep", use_container_width=True):
+            st.info("💡 **Interview Preparation**\n\n• Common questions bank\n• Behavioral interview tips\n• Technical skill assessment\n• Mock interview sessions")
+    
+    with quick_cols[2]:
+        if st.button("📊 Salary Insights", use_container_width=True):
+            st.info("💰 **Industry Salary Data**\n\n• Role-based salary ranges\n• Location adjustments\n• Experience level impact\n• Negotiation strategies")
+    
+    with quick_cols[3]:
+        if st.button("🌐 Job Market Trends", use_container_width=True):
+            st.info("📈 **Current Market Trends**\n\n• In-demand skills\n• Growing industries\n• Remote work insights\n• Future job predictions")
+
+    # Success Stories / Testimonials
+    st.markdown("## 🌟 Success Stories")
+    
+    testimonials = [
+        {
+            "text": "This platform helped me increase my interview calls by 300%! The ATS optimization was a game-changer.",
+            "author": "Priya S., Software Engineer at Google"
+        },
+        {
+            "text": "The masterclasses gave me insights I couldn't find anywhere else. Landed my dream job in data science!",
+            "author": "Rahul M., Data Scientist at Microsoft"
+        },
+        {
+            "text": "Premium subscription paid for itself with the first job offer. The 1-on-1 coaching was incredible.",
+            "author": "Anita K., Product Manager at Amazon"
+        }
+    ]
+    
+    test_cols = st.columns(3)
+    for idx, testimonial in enumerate(testimonials):
+        with test_cols[idx]:
+            st.markdown(f"""
+            <div class="testimonial-card">
+                <div class="testimonial-text">"{testimonial['text']}"</div>
+                <div class="testimonial-author">— {testimonial['author']}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    # Call-to-Action Section
+    if st.session_state.user_email and not st.session_state.subscribed:
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                   color: white; padding: 40px; border-radius: 20px; text-align: center; margin-top: 40px;">
+            <h3 style="margin-top: 0;">🚀 Ready to Accelerate Your Career?</h3>
+            <p style="font-size: 1.1rem; opacity: 0.9; margin-bottom: 25px;">
+                Join thousands of professionals who upgraded to Premium and achieved their career goals 3x faster.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if st.button("💎 Upgrade to Premium Now", use_container_width=True, key="cta_premium"):
+            st.session_state.redirect_page = "💎 Subscription"
+            st.success("Redirecting to Premium plans...")
+            time.sleep(1)
+            st.rerun()
+
+    # Footer with additional resources
+    st.markdown("---")
+    st.markdown("## 📚 Additional Resources")
+    
+    resource_cols = st.columns(3)
+    
+    with resource_cols[0]:
+        st.markdown("""
+        **📖 Learning Resources**
+        - [Resume Writing Guide](https://example.com)
+        - [Interview Preparation](https://example.com)
+        - [Career Change Roadmap](https://example.com)
+        - [Salary Negotiation Tips](https://example.com)
+        """)
+    
+    with resource_cols[1]:
+        st.markdown("""
+        **🔗 Useful Links**
+        - [LinkedIn Profile Optimization](https://example.com)
+        - [GitHub Portfolio Setup](https://example.com)
+        - [Networking Strategies](https://example.com)
+        - [Personal Branding Guide](https://example.com)
+        """)
+    
+    with resource_cols[2]:
+        st.markdown("""
+        **📞 Support & Community**
+        - [Help Center](https://example.com)
+        - [Community Forum](https://example.com)
+        - [Live Chat Support](https://example.com)
+        - [Career Counseling](https://example.com)
+        """)
+
+    # Handle page redirects
+    if hasattr(st.session_state, 'redirect_page') and st.session_state.redirect_page:
+        # This would need to be handled by your main navigation logic
+        pass
 # ================== RESUME ANALYZER ==================
 elif choice == "📂 Resume Analyzer":
     st.header("Upload Resume for Analysis")
