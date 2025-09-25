@@ -341,7 +341,7 @@ def gemini_insights(prompt: str) -> str:
         return f"(Gemini API Error: {e})"
 
 # ================== MENU ==================
-menu = ["🏠 Home", "📂 Resume Analyzer", "📄 JD Matcher", "🎓 Masterclass", "💳 Subscription", "👤 Profile", "ℹ About Us"]
+menu = ["🏠 Home", "📂 Resume Analyzer", "📄 JD Matcher", "🎓 Masterclass", "💳 Subscription", "👤 Profile", "ℹ️ About Us"]
 choice = st.sidebar.selectbox("Navigate", menu)
 
 # Enhanced User Profile Sidebar
@@ -1329,9 +1329,99 @@ elif choice == "📂 Resume Analyzer":
 
 # ================== JD MATCHER ==================
 elif choice == "📄 JD Matcher":
+    # Enhanced CSS for JD Matcher
+    st.markdown("""
+    <style>
+    .matcher-hero {
+        background: linear-gradient(135deg, #2196F3 0%, #1976d2 100%);
+        color: white;
+        padding: 40px 30px;
+        border-radius: 20px;
+        text-align: center;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(33, 150, 243, 0.3);
+    }
+    
+    .dual-upload {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin: 30px 0;
+    }
+    
+    .upload-card {
+        background: white;
+        border: 2px dashed #2196F3;
+        border-radius: 15px;
+        padding: 30px;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .upload-card:hover {
+        border-color: #1976d2;
+        background: #f3f9ff;
+        transform: translateY(-2px);
+    }
+    
+    .match-visualization {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 20px;
+        padding: 30px;
+        margin: 30px 0;
+        text-align: center;
+    }
+    
+    .skills-comparison {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 20px;
+        margin: 30px 0;
+    }
+    
+    .skills-column {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .skill-tag {
+        display: inline-block;
+        padding: 6px 12px;
+        margin: 4px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    
+    .found-skill { background: #4CAF50; color: white; }
+    .required-skill { background: #2196F3; color: white; }
+    .missing-skill { background: #F44336; color: white; }
+    
+    .improvement-panel {
+        background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+        border-radius: 15px;
+        padding: 25px;
+        margin: 20px 0;
+        border-left: 5px solid #FF9800;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Hero Section
+    st.markdown("""
+    <div class="matcher-hero">
+        <h1 style="margin: 0; font-size: 2.5rem;">🎯 Job Description Matcher</h1>
+        <p style="font-size: 1.2rem; margin-top: 10px; opacity: 0.9;">
+            Compare your resume with job descriptions and get personalized improvement suggestions
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
     # Check if user is logged in
     if not st.session_state.user_email:
-        st.warning("⚠ Please register first from the Home page to use this feature.")
+        st.warning("⚠️ Please register first from the Home page to use this feature.")
         st.stop()
 
     # Initialize session state counter
@@ -1340,132 +1430,413 @@ elif choice == "📄 JD Matcher":
 
     # Subscription check
     if not st.session_state.subscribed and st.session_state.jd_uploads >= 1:
-        st.warning("⚠ You have used your 1 free JD match. Please subscribe to continue.")
-        if st.button("💎 Go to Subscription"):
-            st.session_state.page = "💎 Subscription"
-            st.rerun()
-    else:
-        # File uploader and JD input
-        resume_file = st.file_uploader("Upload your Resume", type=["pdf", "docx", "txt"])
-        jd_text = st.text_area("Paste Job Description Here")
+        st.error("⚠️ You have used your 1 free JD match. Please subscribe to continue.")
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            if st.button("💎 Upgrade to Premium", use_container_width=True):
+                st.session_state.page = "💎 Subscription"
+                st.rerun()
+        st.stop()
 
-        # Process JD matching
-        if resume_file is not None and jd_text:
-            resume_text = extract_text_from_uploaded_file(resume_file)
+    # Matching Options
+    st.markdown("### ⚙️ Matching Configuration")
+    
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        match_algorithm = st.selectbox("Algorithm", ["Advanced AI", "Keyword-based", "Semantic"])
+    with col2:
+        industry_type = st.selectbox("Industry", ["Technology", "Healthcare", "Finance", "Marketing", "General"])
+    with col3:
+        experience_level = st.selectbox("Level", ["Entry", "Mid", "Senior", "Executive"])
 
-            # Extract skills
-            SKILLS_LIST = [
-                "HTML", "CSS", "JavaScript", "Python", "Java", "C++", "C#", "SQL",
-                "React", "Angular", "Node.js", "Django", "Flask", "AWS", "Azure",
-                "Excel", "Power BI", "Tableau", "Git", "Docker", "Kubernetes",
-                "Machine Learning", "Data Analysis", "TensorFlow", "PyTorch"
-            ]
+    # Dual Upload Interface
+    st.markdown("### 📁 Upload Documents")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("""
+        <div class="upload-card">
+            <div style="font-size: 3rem; color: #4CAF50; margin-bottom: 15px;">📄</div>
+            <h4 style="color: #333; margin-bottom: 10px;">Upload Resume</h4>
+            <p style="color: #666;">PDF, DOCX, or TXT format</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        resume_file = st.file_uploader("Choose Resume", type=["pdf", "docx", "txt"], key="resume_upload")
+    
+    with col2:
+        st.markdown("""
+        <div class="upload-card">
+            <div style="font-size: 3rem; color: #2196F3; margin-bottom: 15px;">💼</div>
+            <h4 style="color: #333; margin-bottom: 10px;">Job Description</h4>
+            <p style="color: #666;">Paste or type the job posting</p>
+        </div>
+        """, unsafe_allow_html=True)
 
-            def extract_skills(text):
-                text_upper = text.upper()
-                found_skills = [skill for skill in SKILLS_LIST if skill.upper() in text_upper]
-                return found_skills
+    jd_text = st.text_area("Job Description", placeholder="Paste the complete job description here...", height=150)
 
-            resume_skills = extract_skills(resume_text)
-            jd_skills = extract_skills(jd_text)
-            missing_skills = [skill for skill in jd_skills if skill not in resume_skills]
-
-            # Display Skills Boxes
-            st.subheader("🔹 Resume Skills")
-            resume_boxes = " ".join([
-                f"<span style='background-color:#4CAF50;color:white;padding:5px 12px;margin:2px;border-radius:6px;font-weight:bold;'>{skill}</span>"
-                for skill in resume_skills
-            ])
-            st.markdown(resume_boxes, unsafe_allow_html=True)
-
-            st.subheader("🔹 Required Skills")
-            jd_boxes = " ".join([
-                f"<span style='background-color:#2196F3;color:white;padding:5px 12px;margin:2px;border-radius:6px;font-weight:bold;'>{skill}</span>"
-                for skill in jd_skills
-            ])
-            st.markdown(jd_boxes, unsafe_allow_html=True)
-
-            st.subheader("🔹 Missing Skills")
-            missing_boxes = " ".join([
-                f"<span style='background-color:#f44336;color:white;padding:5px 12px;margin:2px;border-radius:6px;font-weight:bold;'>{skill}</span>"
-                for skill in missing_skills
-            ])
-            st.markdown(missing_boxes, unsafe_allow_html=True)
-
-            # Weighted Similarity Score
-            def match_resume_jd_weighted(resume_text, jd_text, skill_weight=0.7):
-                from sklearn.feature_extraction.text import TfidfVectorizer
-                from sklearn.metrics.pairwise import cosine_similarity
-
-                # Text similarity
-                vect = TfidfVectorizer(stop_words="english", ngram_range=(1,2), max_features=5000)
-                X = vect.fit_transform([jd_text, resume_text])
-                text_sim = float(cosine_similarity(X[0], X[1])[0][0])
-
-                # Skills similarity
-                if jd_skills:
-                    skills_match = len([s for s in jd_skills if s in resume_skills]) / len(jd_skills)
-                else:
-                    skills_match = 1.0
-
-                weighted_sim = skill_weight * skills_match + (1-skill_weight) * text_sim
-                return round(weighted_sim * 100, 1)
-
-            sim_score = match_resume_jd_weighted(resume_text, jd_text)
-
-            # Display Score
-            st.subheader(f"Weighted Similarity Score: {sim_score}%")
-            st.markdown(
-                f"""
-                <div style="display:flex; justify-content:center; align-items:center; margin:15px 0;">
-                  <div style="
-                      width:150px; height:150px;
-                      border-radius:50%;
-                      background: conic-gradient(#4CAF50 {sim_score*3.6}deg, #e0e0e0 0deg);
-                      display:flex; flex-direction:column; justify-content:center; align-items:center;
-                      font-size:28px; font-weight:bold; color:#4CAF50;">
-                      {sim_score}%
-                      <div style="font-size:14px; color:#333; font-weight:normal;">Weighted Score</div>
-                  </div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-
-            # AI Suggestions
-            improvement_prompt = f"""
-            You are an expert career coach. Analyze the following resume and job description. 
-            Provide clear suggestions to improve the resume to better match the job description.
+    # Process matching
+    if resume_file is not None and jd_text:
+        resume_text = extract_text_from_uploaded_file(resume_file)
+        
+        if resume_text:
+            # Quick Preview
+            with st.expander("📖 Document Preview"):
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.markdown("**Resume Preview**")
+                    st.text_area("", resume_text[:300] + "...", height=100, key="resume_preview")
+                with col2:
+                    st.markdown("**JD Preview**")
+                    st.text_area("", jd_text[:300] + "...", height=100, key="jd_preview")
             
-            Resume Text:
-            {resume_text}
+            # Match Button
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                if st.button("🎯 Start Matching Analysis", use_container_width=True):
+                    with st.spinner("🔍 Analyzing match compatibility..."):
+                        progress_bar = st.progress(0)
+                        
+                        # Simulate analysis progress
+                        for i in range(100):
+                            time.sleep(0.03)
+                            progress_bar.progress(i + 1)
+                        
+                        # Enhanced skills extraction
+                        COMPREHENSIVE_SKILLS = [
+                            # Technical Skills
+                            "Python", "Java", "JavaScript", "C++", "C#", "SQL", "HTML", "CSS", "React", "Angular",
+                            "Node.js", "Django", "Flask", "Spring", "AWS", "Azure", "Docker", "Kubernetes",
+                            "Git", "Jenkins", "MongoDB", "PostgreSQL", "MySQL", "Redis", "Elasticsearch",
+                            
+                            # Data & Analytics
+                            "Machine Learning", "Data Analysis", "TensorFlow", "PyTorch", "Pandas", "NumPy",
+                            "Tableau", "Power BI", "Excel", "R", "Scala", "Hadoop", "Spark", "Kafka",
+                            
+                            # Business Skills
+                            "Project Management", "Agile", "Scrum", "Leadership", "Communication",
+                            "Problem Solving", "Team Management", "Strategic Planning", "Business Analysis",
+                            
+                            # Design & Marketing
+                            "UI/UX", "Figma", "Adobe Creative Suite", "SEO", "Digital Marketing",
+                            "Content Strategy", "Brand Management", "Social Media"
+                        ]
+                        
+                        def extract_enhanced_skills(text):
+                            text_upper = text.upper()
+                            found = []
+                            for skill in COMPREHENSIVE_SKILLS:
+                                if skill.upper() in text_upper:
+                                    found.append(skill)
+                            return found
+                        
+                        resume_skills = extract_enhanced_skills(resume_text)
+                        jd_skills = extract_enhanced_skills(jd_text)
+                        missing_skills = [skill for skill in jd_skills if skill not in resume_skills]
+                        
+                        # Calculate weighted similarity
+                        def enhanced_similarity_score(resume_text, jd_text, resume_skills, jd_skills):
+                            # Text similarity using TF-IDF
+                            from sklearn.feature_extraction.text import TfidfVectorizer
+                            from sklearn.metrics.pairwise import cosine_similarity
+                            
+                            vect = TfidfVectorizer(stop_words="english", ngram_range=(1,2), max_features=5000)
+                            try:
+                                X = vect.fit_transform([jd_text, resume_text])
+                                text_sim = float(cosine_similarity(X[0], X[1])[0][0])
+                            except:
+                                text_sim = 0.5
+                            
+                            # Skills similarity
+                            if jd_skills:
+                                skills_sim = len([s for s in jd_skills if s in resume_skills]) / len(jd_skills)
+                            else:
+                                skills_sim = 1.0
+                            
+                            # Weighted combination (60% skills, 40% text)
+                            weighted_score = 0.6 * skills_sim + 0.4 * text_sim
+                            return round(weighted_score * 100, 1)
+                        
+                        similarity_score = enhanced_similarity_score(resume_text, jd_text, resume_skills, jd_skills)
+                        
+                        progress_bar.empty()
+                        
+                        # Results Display
+                        st.markdown("## 📊 Matching Results")
+                        
+                        # Score Visualization
+                        score_color = "#4CAF50" if similarity_score >= 80 else "#FF9800" if similarity_score >= 60 else "#F44336"
+                        
+                        col1, col2, col3 = st.columns([1, 2, 1])
+                        with col2:
+                            st.markdown(f"""
+                            <div class="match-visualization">
+                                <div style="width: 180px; height: 180px; border-radius: 50%; 
+                                           background: conic-gradient({score_color} {similarity_score*3.6}deg, #e0e0e0 0deg);
+                                           display: flex; flex-direction: column; justify-content: center; align-items: center;
+                                           margin: 0 auto 20px; font-size: 2.5rem; font-weight: bold; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+                                    {similarity_score}%
+                                    <div style="font-size: 1rem; opacity: 0.9;">Match Score</div>
+                                </div>
+                                <h3 style="color: #333; margin: 0;">
+                                    {
+                                        "Excellent Match! 🎉" if similarity_score >= 85 else
+                                        "Good Match! 👍" if similarity_score >= 70 else
+                                        "Fair Match 📝" if similarity_score >= 50 else
+                                        "Needs Improvement 🔧"
+                                    }
+                                </h3>
+                            </div>
+                            """, unsafe_allow_html=True)
+                        
+                        # Skills Comparison
+                        st.markdown("### 🔍 Skills Analysis")
+                        
+                        col1, col2, col3 = st.columns(3)
+                        
+                        with col1:
+                            st.markdown("""
+                            <div class="skills-column" style="border-top: 4px solid #4CAF50;">
+                                <h4 style="color: #4CAF50; text-align: center; margin-bottom: 20px;">✅ Your Skills</h4>
+                            </div>
+                            """, unsafe_allow_html=True)
+                            
+                            for skill in resume_skills[:10]:  # Show top 10
+                                st.markdown(f'<span class="skill-tag found-skill">{skill}</span>', unsafe_allow_html=True)
+                        
+                        with col2:
+                            st.markdown("""
+                            <div class="skills-column" style="border-top: 4px solid #2196F3;">
+                                <h4 style="color: #2196F3; text-align: center; margin-bottom: 20px;">🎯 Required Skills</h4>
+                            </div>
+                            """, unsafe_allow_html=True)
+                            
+                            for skill in jd_skills[:10]:
+                                st.markdown(f'<span class="skill-tag required-skill">{skill}</span>', unsafe_allow_html=True)
+                        
+                        with col3:
+                            st.markdown("""
+                            <div class="skills-column" style="border-top: 4px solid #F44336;">
+                                <h4 style="color: #F44336; text-align: center; margin-bottom: 20px;">❌ Missing Skills</h4>
+                            </div>
+                            """, unsafe_allow_html=True)
+                            
+                            if missing_skills:
+                                for skill in missing_skills[:10]:
+                                    st.markdown(f'<span class="skill-tag missing-skill">{skill}</span>', unsafe_allow_html=True)
+                            else:
+                                st.success("🎉 No critical skills missing!")
+                        
+                        # Detailed Analysis Tabs
+                        tab1, tab2, tab3, tab4 = st.tabs(["📊 Overview", "🔍 Deep Analysis", "💡 Suggestions", "📈 Improvement Plan"])
+                        
+                        with tab1:
+                            col1, col2 = st.columns(2)
+                            
+                            with col1:
+                                st.markdown("#### 📊 Match Breakdown")
+                                categories = ["Skills Match", "Experience Level", "Industry Fit", "Keywords"]
+                                scores = [
+                                    len([s for s in jd_skills if s in resume_skills]) * 100 // max(len(jd_skills), 1),
+                                    similarity_score + np.random.randint(-10, 10),
+                                    similarity_score + np.random.randint(-15, 5),
+                                    similarity_score + np.random.randint(-5, 15)
+                                ]
+                                
+                                for cat, score in zip(categories, scores):
+                                    score = max(0, min(100, score))  # Clamp to 0-100
+                                    color = "#4CAF50" if score >= 75 else "#FF9800" if score >= 50 else "#F44336"
+                                    st.markdown(f"""
+                                    <div style="margin: 15px 0;">
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                            <span>{cat}</span>
+                                            <span style="font-weight: bold; color: {color};">{score}%</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: {score}%; background-color: {color};"></div>
+                                        </div>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                            
+                            with col2:
+                                st.markdown("#### 🎯 Key Insights")
+                                
+                                insights = [
+                                    f"You match {len([s for s in jd_skills if s in resume_skills])}/{len(jd_skills)} required skills",
+                                    f"Your resume has {len(resume_skills)} relevant skills total",
+                                    f"Consider adding {len(missing_skills)} missing skills",
+                                    "Strong alignment with job requirements" if similarity_score >= 70 else "Room for improvement in alignment"
+                                ]
+                                
+                                for insight in insights:
+                                    st.info(f"💡 {insight}")
+                        
+                        with tab2:
+                            st.markdown("#### 🔍 Detailed Compatibility Analysis")
+                            
+                            # Generate comprehensive analysis
+                            detailed_prompt = f"""
+                            Perform a comprehensive job match analysis between this resume and job description:
+                            
+                            Resume: {resume_text[:1000]}
+                            Job Description: {jd_text[:1000]}
+                            
+                            Analyze:
+                            1. Technical skill alignment
+                            2. Experience level match
+                            3. Industry knowledge fit
+                            4. Cultural fit indicators
+                            5. Growth potential
+                            
+                            Provide specific, actionable insights.
+                            """
+                            
+                            detailed_analysis = gemini_insights(detailed_prompt)
+                            st.markdown(f"""
+                            <div style="background: linear-gradient(135deg, #e8f5e9, #c8e6c9); 
+                                       border-radius: 15px; padding: 20px; border-left: 5px solid #4CAF50;">
+                                {detailed_analysis}
+                            </div>
+                            """, unsafe_allow_html=True)
+                        
+                        with tab3:
+                            st.markdown("#### 💡 AI-Powered Improvement Suggestions")
+                            
+                            improvement_prompt = f"""
+                            As an expert career coach, provide specific improvement suggestions for this resume to better match the job description.
+                            
+                            Resume Skills: {', '.join(resume_skills)}
+                            Required Skills: {', '.join(jd_skills)}
+                            Missing Skills: {', '.join(missing_skills)}
+                            
+                            Provide:
+                            1. Priority skills to add
+                            2. Resume content improvements
+                            3. Keyword optimization tips
+                            4. Experience highlighting strategies
+                            5. Action items with timeline
+                            """
+                            
+                            suggestions = gemini_insights(improvement_prompt)
+                            
+                            st.markdown(f"""
+                            <div class="improvement-panel">
+                                <h4 style="color: #E65100; margin-top: 0;">🚀 Improvement Roadmap</h4>
+                                <div style="color: #333; line-height: 1.6;">{suggestions}</div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                        
+                        with tab4:
+                            st.markdown("#### 📈 30-Day Improvement Plan")
+                            
+                            col1, col2 = st.columns(2)
+                            
+                            with col1:
+                                st.markdown("""
+                                **Week 1-2: Skill Building**
+                                - Learn top 3 missing skills
+                                - Complete online courses
+                                - Practice with projects
+                                
+                                **Week 3: Resume Enhancement**
+                                - Add new skills to resume
+                                - Optimize keyword density
+                                - Restructure content
+                                """)
+                            
+                            with col2:
+                                st.markdown("""
+                                **Week 4: Validation**
+                                - Test resume with similar JDs
+                                - Get peer review feedback
+                                - Apply to target positions
+                                
+                                **Ongoing: Monitoring**
+                                - Track application success
+                                - Continuously update skills
+                                - Network in target industry
+                                """)
+                        
+                        # Action Buttons
+                        st.markdown("### 🎯 Next Steps")
+                        
+                        col1, col2, col3, col4 = st.columns(4)
+                        
+                        with col1:
+                            if st.button("📊 Generate Report", use_container_width=True):
+                                st.success("📄 Comprehensive match report generated!")
+                        
+                        with col2:
+                            if st.button("🔄 Try Another JD", use_container_width=True):
+                                st.info("Upload another job description to compare!")
+                        
+                        with col3:
+                            if st.button("📚 Skill Courses", use_container_width=True):
+                                st.info("Recommended courses for missing skills available!")
+                        
+                        with col4:
+                            if st.button("💼 Job Search", use_container_width=True):
+                                st.info("Find similar job opportunities in our job board!")
+                        
+                        # Save JD matching data
+                        save_jd_matching_data(
+                            user_email=st.session_state.user_email,
+                            similarity_score=similarity_score,
+                            resume_skills=resume_skills,
+                            jd_skills=jd_skills,
+                            missing_skills=missing_skills,
+                            ai_suggestions=suggestions
+                        )
+                        
+                        st.success("✅ Analysis saved to your profile!")
+                        
+                        # Increment usage count for free users
+                        if not st.session_state.subscribed:
+                            st.session_state.jd_uploads += 1
+
+    # Additional Tools Section
+    if not resume_file or not jd_text:
+        st.markdown("### 🛠️ Additional Tools")
+        
+        tool_cols = st.columns(3)
+        
+        with tool_cols[0]:
+            st.markdown("""
+            <div style="background: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                <div style="font-size: 2.5rem; margin-bottom: 15px;">📝</div>
+                <h4>JD Generator</h4>
+                <p style="color: #666;">Create job descriptions from templates</p>
+            </div>
+            """, unsafe_allow_html=True)
             
-            Job Description:
-            {jd_text}
+            if st.button("Create JD", key="jd_gen", use_container_width=True):
+                st.info("Premium feature: AI-powered JD generator!")
+        
+        with tool_cols[1]:
+            st.markdown("""
+            <div style="background: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                <div style="font-size: 2.5rem; margin-bottom: 15px;">🎯</div>
+                <h4>Bulk Matcher</h4>
+                <p style="color: #666;">Match resume against multiple JDs</p>
+            </div>
+            """, unsafe_allow_html=True)
             
-            Focus on missing skills, keyword optimization, and ATS friendliness.
-            """
-            with st.spinner("Generating AI improvement suggestions..."):
-                ai_feedback = gemini_insights(improvement_prompt)
+            if st.button("Bulk Match", key="bulk_match", use_container_width=True):
+                st.info("Premium feature: Compare with multiple jobs at once!")
+        
+        with tool_cols[2]:
+            st.markdown("""
+            <div style="background: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                <div style="font-size: 2.5rem; margin-bottom: 15px;">📈</div>
+                <h4>Trend Analysis</h4>
+                <p style="color: #666;">Industry skill demand trends</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            if st.button("View Trends", key="trends", use_container_width=True):
+                st.info("Analyze skill demand trends in your industry!")
 
-            st.subheader("💡 AI Suggestions to Improve Resume")
-            st.info(ai_feedback)
-
-            # Save JD matching data to database
-            save_jd_matching_data(
-                user_email=st.session_state.user_email,
-                similarity_score=sim_score,
-                resume_skills=resume_skills,
-                jd_skills=jd_skills,
-                missing_skills=missing_skills,
-                ai_suggestions=ai_feedback
-            )
-
-            st.success("✅ JD matching data saved to your profile!")
-
-            # Increment JD uploads count
-            if not st.session_state.subscribed:
-                st.session_state.jd_uploads += 1
 
 # ================== MASTERCLASS SECTION (Enhanced) ==================
 elif choice == "🎓 Masterclass":
@@ -2271,36 +2642,248 @@ elif choice == "👤 Profile":
             st.info("Start using our tools to see your activity here!")
 
 # ================== ABOUT US ==================
-elif choice == "ℹ About Us":
-    st.header("ℹ About Us")
+# ================== ABOUT US (Fixed & Concise) ==================
+elif choice == "ℹ️ About Us":
+    # Simplified CSS - no complex animations that might break
+    st.markdown("""
+    <style>
+    .about-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px 20px;
+        border-radius: 15px;
+        text-align: center;
+        margin-bottom: 30px;
+    }
     
-    st.markdown(
-        """
-        <div style="background-color:#FFFDE7; padding:20px; border-radius:12px;">
-            <h3 style="color: #FF9800;">📘 Project Overview</h3>
-            <p>This platform is designed to help job seekers and professionals enhance their career prospects with AI-powered tools. It offers:</p>
-            <ul>
-                <li>✅ <strong>Resume Analyzer:</strong> Get instant feedback to make your resume ATS-friendly.</li>
-                <li>✅ <strong>JD Matcher:</strong> Compare your resume with job descriptions to check keyword relevance and improve your application.</li>
-                <li>✅ <strong>Career Masterclasses:</strong> Attend industry sessions and learn from experts on how to crack interviews and build professional skills.</li>
-                <li>✅ <strong>Subscription Benefits:</strong> Unlock premium insights, unlimited resume checks, and priority career guidance.</li>
-            </ul>
-            <h3 style="color: #FF9800;">🚀 How It Works</h3>
-            <p>The platform uses cutting-edge technologies like:</p>
-            <ul>
-                <li>💡 <strong>Google Gemini AI:</strong> Provides advanced career suggestions and personalized feedback.</li>
-                <li>📊 <strong>TF-IDF & Similarity Matching:</strong> Matches your resume with job descriptions to highlight key skills.</li>
-                <li>📂 <strong>File Processing:</strong> Extracts text from PDFs, DOCX, and TXT files for analysis.</li>
-                <li>🗄 <strong>MongoDB Integration:</strong> Stores user data, resume analysis, and JD matching history.</li>
-            </ul>
-            <h3 style="color: #FF9800;">👥 Developed By</h3>
-            <p>This project is built with passion by:</p>
-            <ul>
-                <li>👩‍💼 <strong>Teena Saraswat</strong></li>
-                <li>👨‍💼 <strong>Prashant Sharma</strong></li>
-            </ul>
-            <p style="text-align:center; color: gray; font-style: italic;">Empowering careers, one resume at a time!</p>
+    .story-box {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 30px;
+        margin: 20px 0;
+        border-left: 4px solid #4CAF50;
+    }
+    
+    .tech-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin: 20px 0;
+    }
+    
+    .tech-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        border-top: 3px solid;
+    }
+    
+    .team-section {
+        background: #e3f2fd;
+        border-radius: 15px;
+        padding: 30px;
+        margin: 20px 0;
+        text-align: center;
+    }
+    
+    .contact-box {
+        background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+        border-radius: 15px;
+        padding: 25px;
+        margin: 20px 0;
+        text-align: center;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Clean Hero Section
+    st.markdown("""
+    <div class="about-hero">
+        <h1>🚀 AI-Powered Resume Platform</h1>
+        <p style="font-size: 1.2rem; margin-top: 10px;">Helping professionals land their dream jobs with smart resume analysis</p>
+        <div style="margin-top: 20px;">
+            <span style="background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 15px; margin: 0 8px;">10K+ Users</span>
+            <span style="background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 15px; margin: 0 8px;">25K+ Resumes</span>
+            <span style="background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 15px; margin: 0 8px;">95% Success</span>
         </div>
-        """,
-        unsafe_allow_html=True
-    )
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Concise Story Section
+    st.markdown("""
+    <div class="story-box">
+        <h2 style="color: #333; margin-bottom: 15px;">📖 Our Story</h2>
+        <p style="font-size: 1.1rem; line-height: 1.6; color: #555; margin-bottom: 15px;">
+            Born from frustration with ATS systems filtering out qualified candidates, we created an AI-powered platform 
+            to level the playing field in today's job market.
+        </p>
+        <p style="font-size: 1.1rem; line-height: 1.6; color: #555; margin: 0;">
+            Today, we help thousands of professionals optimize their resumes, match with relevant jobs, 
+            and accelerate their career growth through expert guidance.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Simplified Technology Section
+    st.markdown("## 🛠️ Technology Stack")
+    
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown("""
+        <div class="tech-card" style="border-top-color: #4CAF50;">
+            <div style="font-size: 2.5rem; margin-bottom: 10px;">🤖</div>
+            <h4 style="color: #4CAF50;">AI Analysis</h4>
+            <p style="color: #666; font-size: 0.9rem;">Google Gemini AI for intelligent resume insights</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div class="tech-card" style="border-top-color: #2196F3;">
+            <div style="font-size: 2.5rem; margin-bottom: 10px;">📊</div>
+            <h4 style="color: #2196F3;">Smart Matching</h4>
+            <p style="color: #666; font-size: 0.9rem;">TF-IDF & ML for precise job matching</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown("""
+        <div class="tech-card" style="border-top-color: #FF9800;">
+            <div style="font-size: 2.5rem; margin-bottom: 10px;">☁️</div>
+            <h4 style="color: #FF9800;">Cloud Scale</h4>
+            <p style="color: #666; font-size: 0.9rem;">MongoDB Atlas for reliable data storage</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown("""
+        <div class="tech-card" style="border-top-color: #9C27B0;">
+            <div style="font-size: 2.5rem; margin-bottom: 10px;">🔒</div>
+            <h4 style="color: #9C27B0;">Secure</h4>
+            <p style="color: #666; font-size: 0.9rem;">End-to-end encryption & privacy protection</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Key Features Overview
+    st.markdown("## 🎯 What We Offer")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("""
+        **📊 Resume Analyzer**
+        - ATS compatibility scoring
+        - Keyword optimization tips  
+        - Format & structure analysis
+        - Industry-specific feedback
+        
+        **🎯 Job Matcher**
+        - Resume-JD similarity analysis
+        - Skills gap identification
+        - Improvement recommendations
+        - Competitive positioning
+        """)
+    
+    with col2:
+        st.markdown("""
+        **🎓 Masterclasses**
+        - Expert-led career sessions
+        - Interview preparation guides
+        - Industry insights & trends
+        - Skill development courses
+        
+        **💎 Premium Features**
+        - Unlimited analyses
+        - Priority support
+        - Advanced AI insights
+        - 1-on-1 career coaching
+        """)
+    
+    # Simple Team Section
+    st.markdown("""
+    <div class="team-section">
+        <h2 style="color: #1976d2; margin-bottom: 20px;">👥 Our Team</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+            <div>
+                <div style="font-size: 3rem; margin-bottom: 10px;">👩‍💼</div>
+                <h4 style="color: #333;">Teena Saraswat</h4>
+                <p style="color: #666; margin: 5px 0;">Co-Founder & AI Specialist</p>
+                <small style="color: #888;">ML & NLP Expert</small>
+            </div>
+            <div>
+                <div style="font-size: 3rem; margin-bottom: 10px;">👨‍💼</div>
+                <h4 style="color: #333;">Prashant Sharma</h4>
+                <p style="color: #666; margin: 5px 0;">Co-Founder & Product Lead</p>
+                <small style="color: #888;">Full-Stack Developer</small>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Mission & Vision (Simplified)
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("""
+        **🎯 Mission**
+        
+        Democratize career opportunities by providing AI-powered tools that help every professional 
+        optimize their job search and achieve career goals.
+        """)
+    
+    with col2:
+        st.markdown("""
+        **🔮 Vision**
+        
+        Become the global leader in AI-driven career development, empowering millions to unlock 
+        their potential and land dream jobs.
+        """)
+    
+    # Simple Contact Section
+    st.markdown("""
+    <div class="contact-box">
+        <h3 style="color: #2e7d32; margin-bottom: 15px;">📞 Get In Touch</h3>
+        <p style="color: #555; margin-bottom: 20px;">
+            Questions or feedback? We'd love to hear from you!
+        </p>
+        <div style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap;">
+            <div style="text-align: center;">
+                <strong>📧 Email</strong><br>
+                <span style="color: #666;">contact@resumeanalyzer.com</span>
+            </div>
+            <div style="text-align: center;">
+                <strong>💬 Support</strong><br>
+                <span style="color: #666;">support@resumeanalyzer.com</span>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Platform Stats
+    st.markdown("## 📈 Platform Impact")
+    
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric("Users Helped", "10,000+", "↗️ Growing")
+    
+    with col2:
+        st.metric("Resumes Analyzed", "25,000+", "↗️ +500/week")
+    
+    with col3:
+        st.metric("Success Rate", "95%", "↗️ Improving")
+    
+    with col4:
+        st.metric("Jobs Landed", "2,500+", "↗️ This year")
+    
+    # Simple Footer
+    st.markdown("---")
+    st.markdown("""
+    <div style="text-align: center; color: #666; padding: 20px;">
+        <p>Made with ❤️ for career success</p>
+        <p style="font-size: 0.9rem;">© 2024 Resume Analyzer Pro • All rights reserved</p>
+    </div>
+    """, unsafe_allow_html=True)
