@@ -9,18 +9,140 @@ from docx import Document
 from PyPDF2 import PdfReader
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-import google.generativeai as genai
 import io
 import qrcode
 from PIL import Image
 from pymongo import MongoClient
 import uuid
 from datetime import datetime, timedelta
+from openai import OpenAI
+client = OpenAI()
+
 
 MONGO_URI = "mongodb+srv://teena3:123@cluster0.ojomaf6.mongodb.net/" # connection string 
 
 # Connect to MongoDB
 client = MongoClient(MONGO_URI)
+
+# ================== POSITION CLASSIFICATION ==================
+def detect_best_position(resume_text):
+    """Resume text ke basis pe best suited position detect karta hai"""
+    
+    # Position keywords mapping
+    position_keywords = {
+        "Data Analyst": [
+            "data analysis", "sql", "python", "excel", "tableau", "power bi", 
+            "statistics", "data visualization", "pandas", "numpy", "analytics",
+            "business intelligence", "reporting", "dashboard", "kpi", "metrics"
+        ],
+        "Data Scientist": [
+            "machine learning", "deep learning", "tensorflow", "pytorch", "scikit-learn",
+            "nlp", "computer vision", "neural network", "predictive modeling", "ai",
+            "data science", "feature engineering", "model deployment", "r programming"
+        ],
+        "Software Engineer": [
+            "software development", "programming", "java", "c++", "javascript", "react",
+            "angular", "node.js", "api", "microservices", "agile", "git", "devops",
+            "backend", "frontend", "full stack", "coding", "algorithm"
+        ],
+        "Project Manager": [
+            "project management", "agile", "scrum", "stakeholder", "budget", "timeline",
+            "risk management", "team leadership", "pmp", "jira", "coordination",
+            "planning", "execution", "delivery", "roadmap", "sprint"
+        ],
+        "Business Analyst": [
+            "business analysis", "requirements gathering", "stakeholder management",
+            "process improvement", "documentation", "user stories", "wireframes",
+            "gap analysis", "feasibility study", "business requirements", "uml"
+        ],
+        "DevOps Engineer": [
+            "devops", "ci/cd", "jenkins", "docker", "kubernetes", "aws", "azure",
+            "terraform", "ansible", "monitoring", "automation", "cloud", "pipeline",
+            "deployment", "infrastructure", "containerization"
+        ],
+        "Frontend Developer": [
+            "html", "css", "javascript", "react", "angular", "vue", "ui/ux",
+            "responsive design", "bootstrap", "sass", "webpack", "jquery",
+            "frontend development", "web development", "dom manipulation"
+        ],
+        "Backend Developer": [
+            "backend development", "api development", "database", "server", "node.js",
+            "django", "flask", "spring boot", "rest api", "graphql", "mongodb",
+            "postgresql", "redis", "microservices", "authentication"
+        ],
+        "Marketing Manager": [
+            "marketing strategy", "digital marketing", "seo", "sem", "content marketing",
+            "social media", "brand management", "campaign", "analytics", "roi",
+            "market research", "email marketing", "advertising", "growth hacking"
+        ],
+        "HR Manager": [
+            "human resources", "recruitment", "talent acquisition", "employee relations",
+            "performance management", "onboarding", "training", "compensation",
+            "hr policies", "workforce planning", "hrms", "payroll"
+        ],
+        "Sales Executive": [
+            "sales", "business development", "lead generation", "client relationship",
+            "negotiation", "revenue", "crm", "salesforce", "cold calling",
+            "account management", "sales strategy", "targets", "pipeline"
+        ],
+        "UI/UX Designer": [
+            "ui design", "ux design", "figma", "sketch", "adobe xd", "wireframing",
+            "prototyping", "user research", "usability testing", "design thinking",
+            "interaction design", "user interface", "user experience"
+        ],
+        "Product Manager": [
+            "product management", "product strategy", "roadmap", "feature prioritization",
+            "user stories", "product lifecycle", "market research", "mvp",
+            "product analytics", "a/b testing", "stakeholder management"
+        ],
+        "QA Engineer": [
+            "quality assurance", "testing", "automation testing", "selenium", "junit",
+            "test cases", "bug tracking", "regression testing", "manual testing",
+            "test automation", "qa processes", "defect management"
+        ],
+        "Content Writer": [
+            "content writing", "copywriting", "seo writing", "blog", "article",
+            "creative writing", "editing", "proofreading", "content strategy",
+            "storytelling", "content management", "cms", "wordpress"
+        ]
+    }
+    
+    resume_lower = resume_text.lower()
+    position_scores = {}
+    
+    # Calculate score for each position
+    for position, keywords in position_keywords.items():
+        score = 0
+        matched_keywords = []
+        
+        for keyword in keywords:
+            if keyword.lower() in resume_lower:
+                score += 1
+                matched_keywords.append(keyword)
+        
+        # Calculate percentage match
+        match_percentage = (score / len(keywords)) * 100
+        position_scores[position] = {
+            "score": score,
+            "percentage": match_percentage,
+            "matched_keywords": matched_keywords
+        }
+    
+    # Sort positions by score
+    sorted_positions = sorted(position_scores.items(), key=lambda x: x[1]["score"], reverse=True)
+    
+    # Get top 3 positions
+    best_positions = []
+    for position, data in sorted_positions[:3]:
+        if data["score"] > 0:  # Only include if there's at least some match
+            best_positions.append({
+                "position": position,
+                "match_percentage": round(data["percentage"], 1),
+                "keyword_count": data["score"],
+                "confidence": "High" if data["percentage"] >= 30 else "Medium" if data["percentage"] >= 15 else "Low"
+            })
+    
+    return best_positions if best_positions else [{"position": "General", "match_percentage": 0, "keyword_count": 0, "confidence": "Low"}]
 
 # Database aur Collection choose karo
 db = client["myDatabase"]        
@@ -31,7 +153,8 @@ payment_collection = db["payments"]        # payment history ke liye
 pending_payments = db["pending_payments"]  # pending payments track karne ke liye
 
 # ================== CONFIG ==================
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+
+ 
 
 st.set_page_config(page_title="AI Resume + Job Prep Tool", layout="wide")
 st.title("🚀 AI-Powered Resume + Job Prep Platform")
@@ -332,13 +455,15 @@ def match_resume_jd_tfidf(resume_text: str, jd_text: str, top_k: int = 15):
 
     return sim_pct, top_terms, present, missing
 
-def gemini_insights(prompt: str) -> str:
+def ai_insights(prompt: str) -> str:
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        response = model.generate_content(prompt)
-        return response.text.strip()
+        response = client.responses.create(
+            model="gpt-4.1-mini",
+            input=prompt
+        )
+        return response.output_text
     except Exception as e:
-        return f"(Gemini API Error: {e})"
+        return f"(OpenAI Error: {e})"
 
 # ================== MENU ==================
 menu = ["🏠 Home", "📂 Resume Analyzer", "📄 JD Matcher", "🎓 Masterclass", "💳 Subscription", "👤 Profile", "ℹ️ About Us"]
@@ -404,7 +529,6 @@ if st.session_state.user_email and st.session_state.user_name:
         except:
             pass
 
-# ================== HOME ==================
 # ================== HOME (Enhanced) ==================
 if choice == "🏠 Home":
     # Custom CSS for enhanced home page
@@ -666,57 +790,100 @@ if choice == "🏠 Home":
     </div>
     """, unsafe_allow_html=True)
     
-    # ----------- USER FORM (Enhanced) -----------
+# Professional Registration Form
     if not st.session_state.user_email:
-        st.markdown("""
-        <div class="user-form-container">
-            <div class="form-title">🌟 Start Your Career Journey</div>
-            <div class="form-subtitle">Join thousands of successful professionals. Get personalized insights in 30 seconds!</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        # Enhanced form with better layout
-        with st.form("user_details_form", clear_on_submit=True):
-            col1, col2 = st.columns(2)
-            with col1:
-                name = st.text_input("👤 Full Name", placeholder="Enter your full name")
-                email = st.text_input("📧 Email Address", placeholder="your.email@company.com")
-            with col2:
-                phone = st.text_input("📱 Phone Number", placeholder="+91 XXXXX XXXXX")
-                experience = st.selectbox("💼 Experience Level", 
-                    ["Select Experience", "0-1 years (Fresher)", "1-3 years", "3-5 years", "5-10 years", "10+ years"])
+        st.markdown("### 🔐 Get Started - Register Now")
+        
+        # Create a centered, professional form container
+        col1, col2, col3 = st.columns([1, 2, 1])
+        
+        with col2:
+            st.markdown("""
+            <div style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); 
+                        padding: 40px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+                        border: 1px solid #e0e0e0;">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <div style="font-size: 3rem; margin-bottom: 10px;">👤</div>
+                    <h2 style="color: #1976d2; margin: 0;">Create Your Account</h2>
+                    <p style="color: #666; margin-top: 10px; font-size: 0.95rem;">
+                        Join 10,000+ professionals transforming their careers
+                    </p>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
             
-            industry = st.selectbox("🏢 Industry/Domain", 
-                ["Select Industry", "Information Technology", "Data Science/Analytics", "Marketing", 
-                 "Finance", "Healthcare", "Education", "Engineering", "Consulting", "Other"])
-            
-            col1, col2, col3 = st.columns([1, 2, 1])
-            with col2:
-                submitted = st.form_submit_button("✨ Join Now & Get Free Analysis", use_container_width=True)
-
-        if submitted:
-            if not name or not email or not phone or experience == "Select Experience":
-                st.error("⚠️ Please fill in all required details to continue.")
-            else:
-                if save_user_basic_info(name, email, phone):
-                    st.success(f"🎉 Welcome aboard, {name}! Your career transformation starts now.")
-                    st.balloons()
-                    # Check subscription status
-                    check_user_subscription(email)
-                    time.sleep(1)
-                    st.rerun()
-    else:
-        # Welcome back section for existing users
-        st.markdown(f"""
-        <div style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); 
-                   border-radius: 20px; padding: 30px; text-align: center; margin-bottom: 30px;
-                   border: 2px solid #4CAF50;">
-            <h2 style="color: #2e7d32; margin: 0;">👋 Welcome Back, {st.session_state.user_name}!</h2>
-            <p style="color: #388e3c; font-size: 1.1rem; margin-top: 10px;">
-                Ready to take the next step in your career journey?
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
+            # Form with custom styling
+            with st.form("user_registration_form", clear_on_submit=False):
+                st.markdown("""
+                <style>
+                .stTextInput > div > div > input {
+                    border-radius: 10px;
+                    border: 2px solid #e0e0e0;
+                    padding: 12px 15px;
+                    font-size: 1rem;
+                    transition: all 0.3s ease;
+                }
+                .stTextInput > div > div > input:focus {
+                    border-color: #1976d2;
+                    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+                }
+                </style>
+                """, unsafe_allow_html=True)
+                
+                # Input fields with icons
+                st.markdown("**👤 Full Name**")
+                name = st.text_input(
+                    "Name", 
+                    placeholder="Enter your full name",
+                    label_visibility="collapsed",
+                    key="reg_name"
+                )
+                
+                st.markdown("**📧 Email Address**")
+                email = st.text_input(
+                    "Email", 
+                    placeholder="your.email@example.com",
+                    label_visibility="collapsed",
+                    key="reg_email"
+                )
+                
+                st.markdown("**📱 Phone Number**")
+                phone = st.text_input(
+                    "Phone", 
+                    placeholder="+91 XXXXX XXXXX",
+                    label_visibility="collapsed",
+                    key="reg_phone"
+                )
+                
+                # Terms checkbox
+                st.markdown("<br>", unsafe_allow_html=True)
+                terms = st.checkbox(
+                    "I agree to Terms & Conditions and Privacy Policy",
+                    key="terms_check"
+                )
+                
+                # Submit button with custom styling
+                st.markdown("<br>", unsafe_allow_html=True)
+                submitted = st.form_submit_button(
+                    "🚀 Create Account & Start Free Trial",
+                    use_container_width=True
+                )
+                
+                if submitted:
+                    if not name or not email or not phone:
+                        st.error("⚠️ Please fill in all fields")
+                    elif not terms:
+                        st.error("⚠️ Please accept Terms & Conditions")
+                    elif "@" not in email or "." not in email:
+                        st.error("⚠️ Please enter a valid email address")
+                    else:
+                        if save_user_basic_info(name, email, phone):
+                            st.success("✅ Registration Successful!")
+                            st.balloons()
+                            time.sleep(1)
+                            st.rerun()
+                        else:
+                            st.error("❌ Registration failed. Please try again.")
         
         # Check subscription status
         check_user_subscription(st.session_state.user_email)
@@ -1048,6 +1215,36 @@ elif choice == "📂 Resume Analyzer":
         padding: 25px;
         margin: 20px 0;
     }
+    
+    .position-tag {
+        display: inline-block;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: bold;
+        margin: 5px;
+        transition: all 0.3s ease;
+    }
+    
+    .position-tag:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    
+    .position-badge {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 25px;
+        display: inline-block;
+        margin: 10px;
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .position-badge:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.5);
+    }
     </style>
     """, unsafe_allow_html=True)
     
@@ -1179,9 +1376,9 @@ elif choice == "📂 Resume Analyzer":
                     """
                     
                     try:
-                        model = genai.GenerativeModel("gemini-1.5-flash")
-                        score_response = model.generate_content(score_prompt)
-                        ats_score = int(re.findall(r"\d+", score_response.text.strip())[0])
+                       score_text = ai_insights(score_prompt)
+                       ats_score = int(re.findall(r"\d+", score_text)[0])
+
                     except:
                         ats_score = np.random.randint(60, 95)  # Fallback
                     
@@ -1197,13 +1394,17 @@ elif choice == "📂 Resume Analyzer":
                     Resume: {resume_text}
                     """
                     
-                    detailed_feedback = gemini_insights(feedback_prompt)
+                    detailed_feedback = ai_insights(feedback_prompt)
+
                 
                 # Clear progress bar
                 progress_bar.empty()
                 
                 # Results Section
                 st.markdown("## 📊 Analysis Results")
+                
+                # Detect best positions for this resume
+                best_positions = detect_best_position(resume_text)
                 
                 # ATS Score Display
                 score_color = "#4CAF50" if ats_score >= 80 else "#FF9800" if ats_score >= 60 else "#F44336"
@@ -1216,6 +1417,61 @@ elif choice == "📂 Resume Analyzer":
                         <div style="font-size: 1.2rem; opacity: 0.9;">ATS Score</div>
                     </div>
                     """, unsafe_allow_html=True)
+                
+                # Position Tags Display
+                st.markdown("### 🎯 Best Suited Positions")
+                st.markdown("""
+                <p style="text-align: center; color: #666; margin-bottom: 20px;">
+                    Based on your resume content, here are the top positions you're qualified for:
+                </p>
+                """, unsafe_allow_html=True)
+                
+                # Display position tags
+                position_cols = st.columns(min(3, len(best_positions)))
+                
+                for idx, position_data in enumerate(best_positions[:3]):
+                    with position_cols[idx]:
+                        # Color based on confidence
+                        if position_data["confidence"] == "High":
+                            tag_color = "#4CAF50"
+                            badge_bg = "#e8f5e9"
+                        elif position_data["confidence"] == "Medium":
+                            tag_color = "#FF9800"
+                            badge_bg = "#fff3e0"
+                        else:
+                            tag_color = "#2196F3"
+                            badge_bg = "#e3f2fd"
+                        
+                        st.markdown(f"""
+                        <div style="background: {badge_bg}; border-radius: 12px; padding: 20px; text-align: center; 
+                                    border: 2px solid {tag_color}; margin-bottom: 10px;">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">
+                                {'🥇' if idx == 0 else '🥈' if idx == 1 else '🥉'}
+                            </div>
+                            <h4 style="color: {tag_color}; margin: 10px 0; font-size: 1.1rem;">
+                                {position_data["position"]}
+                            </h4>
+                            <div style="margin: 10px 0;">
+                                <span style="background: {tag_color}; color: white; padding: 4px 12px; 
+                                             border-radius: 20px; font-size: 0.85rem; font-weight: bold;">
+                                    {position_data["match_percentage"]}% Match
+                                </span>
+                            </div>
+                            <div style="margin-top: 8px;">
+                                <span style="color: #666; font-size: 0.85rem;">
+                                    {position_data["keyword_count"]} relevant skills found
+                                </span>
+                            </div>
+                            <div style="margin-top: 5px;">
+                                <span style="background: white; color: {tag_color}; padding: 3px 10px; 
+                                             border-radius: 12px; font-size: 0.75rem; border: 1px solid {tag_color};">
+                                    {position_data["confidence"]} Confidence
+                                </span>
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                
+                st.markdown("---")
                 
                 # Detailed Analysis Tabs
                 tab1, tab2, tab3, tab4 = st.tabs(["🎯 Overall", "🔍 Keywords", "📄 Format", "💡 Suggestions"])
@@ -1692,7 +1948,8 @@ elif choice == "📄 JD Matcher":
                             Provide specific, actionable insights.
                             """
                             
-                            detailed_analysis = gemini_insights(detailed_prompt)
+                            detailed_analysis = ai_insights(detailed_prompt)
+
                             st.markdown(f"""
                             <div style="background: linear-gradient(135deg, #e8f5e9, #c8e6c9); 
                                        border-radius: 15px; padding: 20px; border-left: 5px solid #4CAF50;">
@@ -1718,7 +1975,8 @@ elif choice == "📄 JD Matcher":
                             5. Action items with timeline
                             """
                             
-                            suggestions = gemini_insights(improvement_prompt)
+                            suggestions = ai_insights(improvement_prompt)
+
                             
                             st.markdown(f"""
                             <div class="improvement-panel">
@@ -2234,19 +2492,16 @@ elif choice == "🎓 Masterclass":
             4. Skills to focus on
             5. Networking and job search tips
             
-            Be encouraging, specific, and actionable.
-            """
-            
-            ai_response = gemini_insights(career_prompt)
-            
-            st.markdown(f"""
-            <div style="background: linear-gradient(135deg, #e8f5e9, #c8e6c9); 
-                       border-radius: 15px; padding: 20px; margin: 15px 0;
-                       border-left: 5px solid #4CAF50;">
-                <h4 style="color: #2e7d32; margin-top: 0;">🎯 AI Career Advisor Says:</h4>
-                <div style="color: #333; line-height: 1.6;">{ai_response}</div>
-            </div>
-            """, unsafe_allow_html=True)
+            Be encouraging, specific, and actionable."""  
+
+            ai_response = ai_insights(career_prompt)
+            st.markdown(f"""<div style="background: linear-gradient(135deg, #e8f5e9, #c8e6c9); 
+           border-radius: 15px; padding: 20px; margin: 15px 0;
+           border-left: 5px solid #4CAF50;">
+           <h4 style="color: #2e7d32; margin-top: 0;">🎯 AI Career Advisor Says:</h4>
+           <div style="color: #333; line-height: 1.6;">{ai_response}</div>
+           </div>""", unsafe_allow_html=True)
+
     
     # Quick Action Buttons
     st.markdown("### ⚡ Quick Actions")

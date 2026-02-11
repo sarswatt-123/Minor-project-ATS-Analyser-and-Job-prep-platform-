@@ -39,6 +39,8 @@ print(response.text)
 See the [python quickstart](https://ai.google.dev/tutorials/python_quickstart) for more details.
 """
 from __future__ import annotations
+import warnings
+import textwrap
 
 from google.generativeai import version
 
@@ -76,6 +78,23 @@ from google.generativeai.operations import get_operation
 from google.generativeai.types import GenerationConfig
 
 __version__ = version.__version__
+
+
+warnings.warn(
+    textwrap.dedent(
+        """
+
+        All support for the `google.generativeai` package has ended. It will no longer be receiving 
+        updates or bug fixes. Please switch to the `google.genai` package as soon as possible.
+        See README for more details:
+
+        https://github.com/google-gemini/deprecated-generative-ai-python/blob/main/README.md
+        """
+    ),
+    FutureWarning,
+    stacklevel=2,
+)
+
 
 del embedding
 del files
