@@ -16,16 +16,13 @@ from pymongo import MongoClient
 import uuid
 from datetime import datetime, timedelta
 from openai import OpenAI
-openai_client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key="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"
-)
+client = OpenAI()
+
 
 MONGO_URI = "mongodb+srv://teena3:123@cluster0.ojomaf6.mongodb.net/" # connection string 
 
 # Connect to MongoDB
-mongo_client = MongoClient(MONGO_URI)
-
+client = MongoClient(MONGO_URI)
 
 # ================== POSITION CLASSIFICATION ==================
 def detect_best_position(resume_text):
@@ -148,7 +145,7 @@ def detect_best_position(resume_text):
     return best_positions if best_positions else [{"position": "General", "match_percentage": 0, "keyword_count": 0, "confidence": "Low"}]
 
 # Database aur Collection choose karo
-db = mongo_client["myDatabase"]     
+db = client["myDatabase"]        
 collection = db["user_data"]     # main user collection
 resume_collection = db["resume_analysis"]  # resume analysis data ke liye
 jd_collection = db["jd_matching"]          # JD matching data ke liye
@@ -157,11 +154,12 @@ pending_payments = db["pending_payments"]  # pending payments track karne ke liy
 
 # ================== CONFIG ==================
 
+ 
+
 st.set_page_config(page_title="AI Resume + Job Prep Tool", layout="wide")
 st.title("🚀 AI-Powered Resume + Job Prep Platform")
 
 # ================== SESSION STATE ==================
-
 if "resume_uploads" not in st.session_state:
     st.session_state.resume_uploads = 0
 if "subscribed" not in st.session_state:
@@ -459,14 +457,13 @@ def match_resume_jd_tfidf(resume_text: str, jd_text: str, top_k: int = 15):
 
 def ai_insights(prompt: str) -> str:
     try:
-        response = openai_client.responses.create(
-            model="openai/gpt-4o-mini",  # OpenRouter model name
+        response = client.responses.create(
+            model="gpt-4.1-mini",
             input=prompt
         )
         return response.output_text
     except Exception as e:
-        return f"(OpenRouter Error: {e})"
-
+        return f"(OpenAI Error: {e})"
 
 # ================== MENU ==================
 menu = ["🏠 Home", "📂 Resume Analyzer", "📄 JD Matcher", "🎓 Masterclass", "💳 Subscription", "👤 Profile", "ℹ️ About Us"]
