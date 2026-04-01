@@ -15,6 +15,7 @@ from PIL import Image
 from pymongo import MongoClient
 import uuid
 from datetime import datetime, timedelta
+import matplotlib.pyplot as plt
 from openai import OpenAI
 openai_client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
@@ -157,8 +158,8 @@ pending_payments = db["pending_payments"]  # pending payments track karne ke liy
 
 # ================== CONFIG ==================
 
-st.set_page_config(page_title="AI Resume + Job Prep Tool", layout="wide")
-st.title("🚀 AI-Powered Resume + Job Prep Platform")
+st.set_page_config(page_title="ATS Analyzer  + Job Prep Tool", layout="wide")
+st.title(" ATS Analyzer  & Job Prep Platform")
 
 # ================== SESSION STATE ==================
 
@@ -470,6 +471,8 @@ def ai_insights(prompt: str) -> str:
 
 # ================== MENU ==================
 menu = ["🏠 Home", "📂 Resume Analyzer", "📄 JD Matcher", "🎓 Masterclass", "💳 Subscription", "👤 Profile", "ℹ️ About Us"]
+if "user_email" in st.session_state and st.session_state.user_email == "admin@gmail.com":
+    menu.append("🛠 Admin Panel")
 choice = st.sidebar.selectbox("Navigate", menu)
 
 # Enhanced User Profile Sidebar
@@ -531,7 +534,6 @@ if st.session_state.user_email and st.session_state.user_name:
                 
         except:
             pass
-
 # ================== HOME (Enhanced) ==================
 if choice == "🏠 Home":
     # Custom CSS for enhanced home page
@@ -785,7 +787,7 @@ if choice == "🏠 Home":
     # Main Hero Section
     st.markdown("""
     <div class="main-hero">
-        <div class="hero-title">🚀 AI-Powered Career Platform</div>
+        <div class="hero-title"> ATS Analyzer and  Career Platform</div>
         <div class="hero-subtitle">Transform Your Career with Smart Resume Analysis, Job Matching & Expert Guidance</div>
         <div class="hero-cta">
             <p>Join 10,000+ professionals who landed their dream jobs</p>
@@ -1399,6 +1401,78 @@ elif choice == "📂 Resume Analyzer":
                     
                     detailed_feedback = ai_insights(feedback_prompt)
 
+                    # Generate resume-specific score breakdown
+                    score_breakdown_prompt = f"""
+                    Analyze this resume and return ONLY a JSON object with these 4 scores (integers between 0-100):
+                    {{"ats_compatibility": <score>, "keywords": <score>, "format": <score>, "content_quality": <score>}}
+                    Base scores strictly on what is actually present in the resume. No explanation, only JSON.
+                    Resume: {resume_text[:3000]}
+                    """
+                    try:
+                        score_breakdown_text = ai_insights(score_breakdown_prompt)
+                        import json
+                        clean_json = re.search(r'\{.*?\}', score_breakdown_text, re.DOTALL)
+                        if clean_json:
+                            score_breakdown = json.loads(clean_json.group())
+                        else:
+                            raise ValueError("No JSON found")
+                    except:
+                        score_breakdown = {
+                            "ats_compatibility": ats_score,
+                            "keywords": max(40, ats_score - 10),
+                            "format": max(40, ats_score - 5),
+                            "content_quality": max(40, ats_score - 8)
+                        }
+
+                    # Generate resume-specific keyword analysis
+                    keyword_prompt = f"""
+                    Analyze this resume and return ONLY a JSON object:
+                    {{
+                      "found_keywords": ["list", "of", "skills", "and", "keywords", "actually", "present", "in", "resume"],
+                      "missing_keywords": ["important", "keywords", "missing", "for", "this", "profile"]
+                    }}
+                    - found_keywords: extract 8-12 actual skills/tools/technologies found in the resume
+                    - missing_keywords: suggest 6-10 relevant keywords this profile should add to improve ATS score
+                    No explanation, only JSON.
+                    Resume: {resume_text[:3000]}
+                    """
+                    try:
+                        keyword_text = ai_insights(keyword_prompt)
+                        clean_kw_json = re.search(r'\{.*?\}', keyword_text, re.DOTALL)
+                        if clean_kw_json:
+                            keyword_data = json.loads(clean_kw_json.group())
+                            found_keywords = keyword_data.get("found_keywords", [])
+                            missing_keywords = keyword_data.get("missing_keywords", [])
+                        else:
+                            raise ValueError("No JSON found")
+                    except:
+                        found_keywords = []
+                        missing_keywords = []
+
+                    # Generate resume-specific format analysis
+                    format_prompt = f"""
+                    Analyze this resume's format and structure. Return ONLY a JSON array of exactly 6 items:
+                    [
+                      {{"section": "Contact Information", "present": true/false, "note": "short specific observation"}},
+                      {{"section": "Professional Summary", "present": true/false, "note": "short specific observation"}},
+                      {{"section": "Work Experience", "present": true/false, "note": "short specific observation"}},
+                      {{"section": "Skills Section", "present": true/false, "note": "short specific observation"}},
+                      {{"section": "Education", "present": true/false, "note": "short specific observation"}},
+                      {{"section": "Achievements/Projects", "present": true/false, "note": "short specific observation"}}
+                    ]
+                    Base your answer ONLY on what is actually in the resume. No explanation, only JSON array.
+                    Resume: {resume_text[:3000]}
+                    """
+                    try:
+                        format_text = ai_insights(format_prompt)
+                        clean_fmt_json = re.search(r'\[.*?\]', format_text, re.DOTALL)
+                        if clean_fmt_json:
+                            format_checks_ai = json.loads(clean_fmt_json.group())
+                        else:
+                            raise ValueError("No JSON found")
+                    except:
+                        format_checks_ai = None
+
                 
                 # Clear progress bar
                 progress_bar.empty()
@@ -1445,6 +1519,11 @@ elif choice == "📂 Resume Analyzer":
                             tag_color = "#2196F3"
                             badge_bg = "#e3f2fd"
                         
+                        # Build job search URLs using English keywords only
+                        job_query = position_data["position"].replace(" ", "+")
+                        indeed_url = f"https://in.indeed.com/jobs?q={job_query}&l=India"
+                        naukri_url = f"https://www.naukri.com/{position_data['position'].lower().replace(' ', '-')}-jobs"
+
                         st.markdown(f"""
                         <div style="background: {badge_bg}; border-radius: 12px; padding: 20px; text-align: center; 
                                     border: 2px solid {tag_color}; margin-bottom: 10px;">
@@ -1471,9 +1550,35 @@ elif choice == "📂 Resume Analyzer":
                                     {position_data["confidence"]} Confidence
                                 </span>
                             </div>
+                            <div style="margin-top: 15px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                                <a href="{indeed_url}" target="_blank" style="
+                                    background: #2164f3; color: white; padding: 7px 14px;
+                                    border-radius: 8px; text-decoration: none; font-size: 0.8rem;
+                                    font-weight: bold; display: inline-flex; align-items: center; gap: 5px;">
+                                    🔍 Apply on Indeed
+                                </a>
+                                <a href="{naukri_url}" target="_blank" style="
+                                    background: #FF7555; color: white; padding: 7px 14px;
+                                    border-radius: 8px; text-decoration: none; font-size: 0.8rem;
+                                    font-weight: bold; display: inline-flex; align-items: center; gap: 5px;">
+                                    💼 Apply on Naukri
+                                </a>
+                            </div>
                         </div>
                         """, unsafe_allow_html=True)
-                
+
+                # Job Recommendations Summary Banner
+                st.markdown("""
+                <div style="background: linear-gradient(135deg, #e8f5e9, #e3f2fd); border-radius: 12px;
+                            padding: 18px 24px; margin: 10px 0 20px 0; border-left: 5px solid #4CAF50;">
+                    <h4 style="margin: 0 0 6px 0; color: #2e7d32;">🚀 Ready to Apply?</h4>
+                    <p style="margin: 0; color: #555; font-size: 0.95rem;">
+                        Click <strong>Apply on Indeed</strong> or <strong>Apply on Naukri</strong> on any position above 
+                        to browse matching live job listings and apply directly.
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
+
                 st.markdown("---")
                 
                 # Detailed Analysis Tabs
@@ -1485,7 +1590,12 @@ elif choice == "📂 Resume Analyzer":
                     with col1:
                         st.markdown("#### 📈 Score Breakdown")
                         categories = ["ATS Compatibility", "Keywords", "Format", "Content Quality"]
-                        scores = [ats_score, np.random.randint(70, 95), np.random.randint(75, 90), np.random.randint(65, 85)]
+                        scores = [
+                            score_breakdown.get("ats_compatibility", ats_score),
+                            score_breakdown.get("keywords", ats_score),
+                            score_breakdown.get("format", ats_score),
+                            score_breakdown.get("content_quality", ats_score)
+                        ]
                         
                         for cat, score in zip(categories, scores):
                             color = "#4CAF50" if score >= 80 else "#FF9800" if score >= 60 else "#F44336"
@@ -1500,57 +1610,67 @@ elif choice == "📂 Resume Analyzer":
                                 </div>
                             </div>
                             """, unsafe_allow_html=True)
-                    
-                    with col2:
-                        st.markdown("#### 🏆 Ranking")
-                        rank_text = "Excellent" if ats_score >= 90 else "Good" if ats_score >= 75 else "Needs Improvement"
-                        st.success(f"Your resume ranks: **{rank_text}**")
-                        
-                        st.markdown("#### 📊 Comparison")
-                        st.info(f"Your score is higher than {min(95, ats_score + np.random.randint(5, 15))}% of resumes in our database.")
-                
+
                 with tab2:
                     st.markdown("#### 🔍 Keyword Analysis")
-                    
-                    # Mock keyword analysis
-                    found_keywords = ["Python", "Machine Learning", "SQL", "Data Analysis"]
-                    missing_keywords = ["TensorFlow", "Docker", "AWS", "Kubernetes"]
                     
                     col1, col2 = st.columns(2)
                     with col1:
                         st.markdown("**✅ Found Keywords**")
-                        for kw in found_keywords:
-                            st.markdown(f"<span style='background: #4CAF50; color: white; padding: 3px 8px; border-radius: 4px; margin: 2px; display: inline-block;'>{kw}</span>", unsafe_allow_html=True)
+                        if found_keywords:
+                            for kw in found_keywords:
+                                st.markdown(f"<span style='background: #4CAF50; color: white; padding: 3px 8px; border-radius: 4px; margin: 2px; display: inline-block;'>{kw}</span>", unsafe_allow_html=True)
+                        else:
+                            st.info("No keywords extracted. Try re-analyzing.")
                     
                     with col2:
                         st.markdown("**❌ Missing Keywords**")
-                        for kw in missing_keywords:
-                            st.markdown(f"<span style='background: #F44336; color: white; padding: 3px 8px; border-radius: 4px; margin: 2px; display: inline-block;'>{kw}</span>", unsafe_allow_html=True)
+                        if missing_keywords:
+                            for kw in missing_keywords:
+                                st.markdown(f"<span style='background: #F44336; color: white; padding: 3px 8px; border-radius: 4px; margin: 2px; display: inline-block;'>{kw}</span>", unsafe_allow_html=True)
+                        else:
+                            st.success("Great! No critical keywords missing.")
                 
                 with tab3:
                     st.markdown("#### 📄 Format Analysis")
                     
-                    format_checks = [
-                        ("Contact Information", True, "Clearly visible at top"),
-                        ("Professional Summary", True, "Present and concise"),
-                        ("Work Experience", True, "Well structured with dates"),
-                        ("Skills Section", False, "Could be more prominent"),
-                        ("Education", True, "Properly formatted"),
-                        ("File Format", True, "ATS-friendly format")
-                    ]
-                    
-                    for check, passed, note in format_checks:
-                        icon = "✅" if passed else "⚠️"
-                        color = "#4CAF50" if passed else "#FF9800"
-                        st.markdown(f"""
-                        <div style="display: flex; align-items: center; margin: 10px 0; padding: 10px; background: {color}20; border-radius: 8px;">
-                            <span style="font-size: 1.2rem; margin-right: 10px;">{icon}</span>
-                            <div>
-                                <strong>{check}</strong><br>
-                                <small style="color: #666;">{note}</small>
+                    if format_checks_ai:
+                        for item in format_checks_ai:
+                            passed = item.get("present", False)
+                            check = item.get("section", "")
+                            note = item.get("note", "")
+                            icon = "✅" if passed else "⚠️"
+                            color = "#4CAF50" if passed else "#FF9800"
+                            st.markdown(f"""
+                            <div style="display: flex; align-items: center; margin: 10px 0; padding: 10px; background: {color}20; border-radius: 8px;">
+                                <span style="font-size: 1.2rem; margin-right: 10px;">{icon}</span>
+                                <div>
+                                    <strong>{check}</strong><br>
+                                    <small style="color: #666;">{note}</small>
+                                </div>
                             </div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                            """, unsafe_allow_html=True)
+                    else:
+                        format_checks_fallback = [
+                            ("Contact Information", True, "Check your resume for contact details"),
+                            ("Professional Summary", True, "Ensure a summary is present"),
+                            ("Work Experience", True, "List experience with dates"),
+                            ("Skills Section", False, "Add a dedicated skills section"),
+                            ("Education", True, "Include your education details"),
+                            ("Achievements/Projects", False, "Add notable projects or achievements")
+                        ]
+                        for check, passed, note in format_checks_fallback:
+                            icon = "✅" if passed else "⚠️"
+                            color = "#4CAF50" if passed else "#FF9800"
+                            st.markdown(f"""
+                            <div style="display: flex; align-items: center; margin: 10px 0; padding: 10px; background: {color}20; border-radius: 8px;">
+                                <span style="font-size: 1.2rem; margin-right: 10px;">{icon}</span>
+                                <div>
+                                    <strong>{check}</strong><br>
+                                    <small style="color: #666;">{note}</small>
+                                </div>
+                            </div>
+                            """, unsafe_allow_html=True)
                 
                 with tab4:
                     st.markdown("#### 💡 AI-Powered Suggestions")
@@ -1896,11 +2016,12 @@ elif choice == "📄 JD Matcher":
                             with col1:
                                 st.markdown("#### 📊 Match Breakdown")
                                 categories = ["Skills Match", "Experience Level", "Industry Fit", "Keywords"]
+                                skills_match_score = len([s for s in jd_skills if s in resume_skills]) * 100 // max(len(jd_skills), 1)
                                 scores = [
-                                    len([s for s in jd_skills if s in resume_skills]) * 100 // max(len(jd_skills), 1),
-                                    similarity_score + np.random.randint(-10, 10),
-                                    similarity_score + np.random.randint(-15, 5),
-                                    similarity_score + np.random.randint(-5, 15)
+                                    skills_match_score,
+                                    min(100, max(0, similarity_score + 5)),
+                                    min(100, max(0, similarity_score - 5)),
+                                    min(100, max(0, skills_match_score + 10))
                                 ]
                                 
                                 for cat, score in zip(categories, scores):
@@ -1936,29 +2057,30 @@ elif choice == "📄 JD Matcher":
                             
                             # Generate comprehensive analysis
                             detailed_prompt = f"""
-                            Perform a comprehensive job match analysis between this resume and job description:
+                            Perform a comprehensive job match analysis between this resume and job description.
                             
                             Resume: {resume_text[:1000]}
                             Job Description: {jd_text[:1000]}
                             
-                            Analyze:
-                            1. Technical skill alignment
-                            2. Experience level match
-                            3. Industry knowledge fit
-                            4. Cultural fit indicators
-                            5. Growth potential
+                            Analyze these 5 areas and use clear markdown headings (##) for each:
+                            ## 1. Technical Skill Alignment
+                            ## 2. Experience Level Match
+                            ## 3. Industry Knowledge Fit
+                            ## 4. Cultural Fit Indicators
+                            ## 5. Growth Potential
                             
-                            Provide specific, actionable insights.
+                            Be specific and base your analysis strictly on the actual resume and JD content above.
                             """
                             
                             detailed_analysis = ai_insights(detailed_prompt)
 
-                            st.markdown(f"""
-                            <div style="background: linear-gradient(135deg, #e8f5e9, #c8e6c9); 
-                                       border-radius: 15px; padding: 20px; border-left: 5px solid #4CAF50;">
-                                {detailed_analysis}
-                            </div>
-                            """, unsafe_allow_html=True)
+                            st.markdown(
+                                '<div style="background: linear-gradient(135deg, #e8f5e9, #c8e6c9); '
+                                'border-radius: 15px; padding: 20px 25px; border-left: 5px solid #4CAF50; margin-bottom: 10px;">'
+                                '</div>',
+                                unsafe_allow_html=True
+                            )
+                            st.markdown(detailed_analysis)
                         
                         with tab3:
                             st.markdown("#### 💡 AI-Powered Improvement Suggestions")
@@ -1966,27 +2088,30 @@ elif choice == "📄 JD Matcher":
                             improvement_prompt = f"""
                             As an expert career coach, provide specific improvement suggestions for this resume to better match the job description.
                             
-                            Resume Skills: {', '.join(resume_skills)}
-                            Required Skills: {', '.join(jd_skills)}
-                            Missing Skills: {', '.join(missing_skills)}
+                            Resume Skills Found: {', '.join(resume_skills) if resume_skills else 'None detected'}
+                            Required Skills in JD: {', '.join(jd_skills) if jd_skills else 'None detected'}
+                            Missing Skills: {', '.join(missing_skills) if missing_skills else 'None'}
                             
-                            Provide:
-                            1. Priority skills to add
-                            2. Resume content improvements
-                            3. Keyword optimization tips
-                            4. Experience highlighting strategies
-                            5. Action items with timeline
+                            Provide actionable advice using clear markdown headings (##) for each section:
+                            ## 1. Priority Skills to Add
+                            ## 2. Resume Content Improvements
+                            ## 3. Keyword Optimization Tips
+                            ## 4. Experience Highlighting Strategies
+                            ## 5. Action Items with Timeline
+                            
+                            Be specific to the skills and gaps identified above.
                             """
                             
                             suggestions = ai_insights(improvement_prompt)
 
-                            
-                            st.markdown(f"""
-                            <div class="improvement-panel">
-                                <h4 style="color: #E65100; margin-top: 0;">🚀 Improvement Roadmap</h4>
-                                <div style="color: #333; line-height: 1.6;">{suggestions}</div>
-                            </div>
-                            """, unsafe_allow_html=True)
+                            st.markdown(
+                                '<div style="background: linear-gradient(135deg, #fff3e0, #ffe0b2); '
+                                'border-radius: 15px; padding: 5px 25px; border-left: 5px solid #FF9800; margin-bottom: 10px;">'
+                                '<h4 style="color: #E65100; margin-top: 15px;">🚀 Improvement Roadmap</h4>'
+                                '</div>',
+                                unsafe_allow_html=True
+                            )
+                            st.markdown(suggestions)
                         
                         with tab4:
                             st.markdown("#### 📈 30-Day Improvement Plan")
@@ -2097,6 +2222,44 @@ elif choice == "📄 JD Matcher":
             
             if st.button("View Trends", key="trends", use_container_width=True):
                 st.info("Analyze skill demand trends in your industry!")
+
+#=========================================Admin Panel ========================================
+elif choice == "🛠 Admin Panel":
+
+    st.title("🛠 Admin Dashboard")
+
+    total_users = collection.count_documents({})
+    total_resumes = resume_collection.count_documents({})
+    total_jd_matches = jd_collection.count_documents({})
+    total_payments = payment_collection.count_documents({})
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    col1.metric("👥 Total Users", total_users)
+    col2.metric("📄 Resume Analyses", total_resumes)
+    col3.metric("🎯 JD Matches", total_jd_matches)
+    col4.metric("💳 Payments", total_payments)
+
+    # Revenue Calculation
+    payments = list(payment_collection.find({}))
+    total_revenue = sum(p.get("amount", 0) for p in payments)
+
+    st.metric("💰 Total Revenue", f"₹ {total_revenue}")
+
+    st.subheader("📊 Revenue Graph")
+
+    if payments:
+        dates = [p["payment_date"].strftime("%Y-%m-%d") for p in payments]
+        amounts = [p["amount"] for p in payments]
+
+        fig, ax = plt.subplots()
+        ax.plot(dates, amounts)
+        ax.set_ylabel("Amount")
+        ax.set_title("Revenue Over Time")
+        plt.xticks(rotation=45)
+
+        st.pyplot(fig)
+
 
 
 # ================== MASTERCLASS SECTION (Enhanced) ==================
