@@ -2529,7 +2529,7 @@ elif choice == "🎓 Masterclass":
             "badges": ["Deep Learning", "Real Projects", "Industry Mentorship"],
             "rating": "4.9",
             "students": "1.9K+",
-            "link": "https://youtu.be/example1",
+            "link": "https://youtu.be/i_LwzRVP7bg?si=hgcT4LtMR6D98KWo",
             "description": "From basics to advanced ML algorithms and neural networks",
             "card_class": "ml-card"
         },
@@ -2541,7 +2541,7 @@ elif choice == "🎓 Masterclass":
             "badges": ["Portfolio Projects", "Figma Expert", "User Research"],
             "rating": "4.8",
             "students": "2.7K+",
-            "link": "https://youtu.be/example2",
+            "link": "https://youtu.be/c9Wg6Cb_YlU?si=oHdR_zf17rdbCN6v",
             "description": "Create stunning user experiences with design thinking principles",
             "card_class": "design-card"
         },
@@ -2553,7 +2553,7 @@ elif choice == "🎓 Masterclass":
             "badges": ["Strategy Framework", "Case Studies", "Industry Network"],
             "rating": "4.8",
             "students": "1.5K+",
-            "link": "https://youtu.be/example3",
+            "link": "https://youtu.be/abA-QZzbon0?si=QlJ78b9sbXDe_eMe",
             "description": "Learn product strategy, roadmapping, and stakeholder management",
             "card_class": "business-card"
         }
@@ -2580,19 +2580,76 @@ elif choice == "🎓 Masterclass":
     # Course Cards
     st.markdown(f"### 📚 {selected_category} Courses ({len(filtered_courses)} available)")
     
+    def get_youtube_thumbnail(url):
+        """YouTube link se video ID extract karke thumbnail URL banata hai"""
+        import re
+        # Normal video patterns
+        video_patterns = [
+            r'youtu\.be/([A-Za-z0-9_-]{11})',
+            r'youtube\.com/watch\?v=([A-Za-z0-9_-]{11})',
+            r'youtube\.com/embed/([A-Za-z0-9_-]{11})',
+        ]
+        for pattern in video_patterns:
+            match = re.search(pattern, url)
+            if match:
+                video_id = match.group(1)
+                return f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg"
+        # Playlist pattern - first video ki thumbnail use karo via playlist ID
+        playlist_match = re.search(r'list=([A-Za-z0-9_-]+)', url)
+        if playlist_match:
+            playlist_id = playlist_match.group(1)
+            return f"https://img.youtube.com/vi/{playlist_id[:11]}/hqdefault.jpg"
+        return None
+
     for course in filtered_courses:
         with st.container():
-            st.markdown(f"""
-            <div class="course-card {course['card_class']}">
-                <div class="course-title">{course['title']}</div>
-                <div class="course-mentor">👨‍🏫 {course['mentor']}</div>
-                <div class="course-duration">⏱️ {course['duration']} | ⭐ {course['rating']} | 👥 {course['students']} enrolled</div>
-                <div class="course-badges">
-                    {''.join([f'<span class="badge">{badge}</span>' for badge in course['badges']])}
+            thumbnail_url = get_youtube_thumbnail(course['link'])
+            
+            if thumbnail_url:
+                col_thumb, col_info = st.columns([1, 2])
+            
+            if thumbnail_url:
+                with col_thumb:
+                    st.markdown(f"""
+                    <a href="{course['link']}" target="_blank">
+                        <img src="{thumbnail_url}" 
+                             style="width:100%; border-radius:12px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+                                    transition: transform 0.3s ease; cursor: pointer;"
+                             onerror="this.style.display='none'"
+                        />
+                        <div style="text-align:center; margin-top:6px;">
+                            <span style="background:#FF0000; color:white; padding:4px 12px; 
+                                         border-radius:20px; font-size:0.8rem; font-weight:bold;">
+                                ▶ Watch Preview
+                            </span>
+                        </div>
+                    </a>
+                    """, unsafe_allow_html=True)
+                
+                with col_info:
+                    st.markdown(f"""
+                    <div class="course-card {course['card_class']}">
+                        <div class="course-title">{course['title']}</div>
+                        <div class="course-mentor">👨‍🏫 {course['mentor']}</div>
+                        <div class="course-duration">⏱️ {course['duration']} | ⭐ {course['rating']} | 👥 {course['students']} enrolled</div>
+                        <div class="course-badges">
+                            {''.join([f'<span class="badge">{badge}</span>' for badge in course['badges']])}
+                        </div>
+                        <p style="color: #666; line-height: 1.6;">{course['description']}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.markdown(f"""
+                <div class="course-card {course['card_class']}">
+                    <div class="course-title">{course['title']}</div>
+                    <div class="course-mentor">👨‍🏫 {course['mentor']}</div>
+                    <div class="course-duration">⏱️ {course['duration']} | ⭐ {course['rating']} | 👥 {course['students']} enrolled</div>
+                    <div class="course-badges">
+                        {''.join([f'<span class="badge">{badge}</span>' for badge in course['badges']])}
+                    </div>
+                    <p style="color: #666; line-height: 1.6;">{course['description']}</p>
                 </div>
-                <p style="color: #666; line-height: 1.6;">{course['description']}</p>
-            </div>
-            """, unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
             
             # Course Action Buttons
             col1, col2, col3 = st.columns([2, 1, 1])
@@ -2607,23 +2664,6 @@ elif choice == "🎓 Masterclass":
             with col3:
                 if st.button("❤️ Wishlist", key=f"wishlist_{course['title']}"):
                     st.success("Added to wishlist!")
-    
-    # Learning Path Recommendations
-    st.markdown("### 🛤️ Recommended Learning Paths")
-    
-    learning_paths = {
-        "💼 Career Switcher to Tech": ["Build ATS-Winning Resumes", "Master Data Science from Scratch", "Ace Technical Interviews"],
-        "🚀 Senior Professional Growth": ["Product Management Excellence", "Machine Learning Bootcamp", "UI/UX Design Mastery"],
-        "🎯 Job Interview Ready": ["Build ATS-Winning Resumes", "Ace Technical Interviews", "Master Data Science from Scratch"]
-    }
-    
-    for path_name, path_courses in learning_paths.items():
-        with st.expander(f"{path_name} (3 courses)"):
-            st.write("**Recommended sequence:**")
-            for i, course_title in enumerate(path_courses, 1):
-                st.write(f"{i}. {course_title}")
-            if st.button(f"Start Learning Path", key=f"path_{path_name}"):
-                st.success(f"🎉 Started learning path: {path_name}")
     
     # Enhanced AI Career Guidance
     st.markdown("""
@@ -2661,33 +2701,16 @@ elif choice == "🎓 Masterclass":
             Be encouraging, specific, and actionable."""  
 
             ai_response = ai_insights(career_prompt)
-            st.markdown(f"""<div style="background: linear-gradient(135deg, #e8f5e9, #c8e6c9); 
-           border-radius: 15px; padding: 20px; margin: 15px 0;
-           border-left: 5px solid #4CAF50;">
-           <h4 style="color: #2e7d32; margin-top: 0;">🎯 AI Career Advisor Says:</h4>
-           <div style="color: #333; line-height: 1.6;">{ai_response}</div>
-           </div>""", unsafe_allow_html=True)
+            st.markdown(
+                '<div style="background: linear-gradient(135deg, #e8f5e9, #c8e6c9); '
+                'border-radius: 15px; padding: 15px 20px; margin: 15px 0; border-left: 5px solid #4CAF50;">'
+                '<h4 style="color: #2e7d32; margin-top: 0;">🎯 AI Career Advisor Says:</h4>'
+                '</div>',
+                unsafe_allow_html=True
+            )
+            st.markdown(ai_response)
 
     
-    # Quick Action Buttons
-    st.markdown("### ⚡ Quick Actions")
-    action_cols = st.columns(4)
-    
-    with action_cols[0]:
-        if st.button("📅 Browse Schedule"):
-            st.info("📋 Upcoming sessions:\n• Data Science - Oct 15\n• Resume Workshop - Oct 18\n• Interview Prep - Oct 22")
-    
-    with action_cols[1]:
-        if st.button("🏆 View Certificates"):
-            st.success("🎓 Your earned certificates will appear here after course completion!")
-    
-    with action_cols[2]:
-        if st.button("👥 Join Community"):
-            st.info("💬 Join our Discord community with 5,000+ learners!")
-    
-    with action_cols[3]:
-        if st.button("📊 Track Progress"):
-            st.info("📈 Progress tracking available for enrolled students!")
 # ================== SUBSCRIPTION SECTION ==================
 elif choice == "💳 Subscription":
     st.markdown(
