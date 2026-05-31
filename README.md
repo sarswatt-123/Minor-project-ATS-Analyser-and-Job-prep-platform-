@@ -1,41 +1,131 @@
-# AI-powered Resume + Job Prep — MVP
+<h1 align="center">📄 ATS Resume Analyzer</h1>
 
-This is a minimal, local MVP built with **Streamlit**. No external APIs required.
+<p align="center">
+  <b>Optimize Your Resume for Applicant Tracking Systems (ATS) 🚀</b>
+</p>
 
-## Features
-- **ATS Resume Analyzer**: Upload PDF/DOCX + optional Job Description → get ATS score, keyword coverage, section checks, and suggestions.
-- **Mock Interview (Text)**: Choose a domain (Data Science / Python / SQL / Cloud), answer questions, get immediate feedback.
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-Project-blue?style=for-the-badge&logo=python" />
+  <img src="https://img.shields.io/badge/AI-Powered-success?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Resume-Analysis-orange?style=for-the-badge" />
+</p>
 
-## Quick Start
-1. Create a virtual environment (optional but recommended)
-```bash
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+---
+
+## 🎯 Project Overview
+
+ATS Resume Analyzer is an AI-powered application designed to help job seekers evaluate and improve their resumes by comparing them with job descriptions.
+
+The system analyzes resume content, identifies missing keywords, calculates ATS compatibility, and provides actionable feedback to increase the chances of passing Applicant Tracking Systems used by recruiters.
+
+---
+
+## ✨ Key Features
+
+✅ Resume Analysis
+
+✅ Job Description Matching
+
+✅ ATS Compatibility Score
+
+✅ Missing Keyword Detection
+
+✅ Skill Gap Identification
+
+✅ AI-Generated Suggestions
+
+✅ User-Friendly Interface
+
+---
+
+## 🛠️ Tech Stack
+
+| Technology | Purpose |
+|------------|----------|
+| Python | Backend Logic |
+| Streamlit | User Interface |
+| Generative AI | Resume Analysis |
+| PDF Processing | Resume Parsing |
+| NLP Techniques | Keyword Matching |
+
+---
+
+## 🚀 How It Works
+
+```text
+Upload Resume
+       ↓
+Upload / Paste Job Description
+       ↓
+Extract Resume Content
+       ↓
+Analyze Keywords & Skills
+       ↓
+Calculate ATS Match Score
+       ↓
+Generate Insights & Suggestions
 ```
-2. Install dependencies
-```bash
-pip install -r requirements.txt
-```
-3. Run the app
-```bash
-streamlit run streamlit_app.py
-```
-4. Open the URL shown in the terminal (usually http://localhost:8501).
 
-## Project Structure
-```
-ats_mvp/
-├── streamlit_app.py
-├── requirements.txt
-├── README.md
-└── data/
-    └── questions.json
-```
+---
 
-## Customize
-- Add or edit questions in `data/questions.json`.
-- Improve scoring in `compute_ats_score()` or integrate LLMs later.
-- Add login, save histories, or export reports as next steps.
+## 📊 Output Includes
 
-## Notes
-- PDF text extraction works best with **text-based PDFs** (not scanned images). Export your resume from Word/Google Docs as PDF for reliable parsing.
+- ATS Match Percentage
+- Missing Keywords
+- Strength Areas
+- Improvement Suggestions
+- Resume Optimization Insights
+
+---
+
+## 💡 Use Case
+
+This project helps:
+
+- Students
+- Freshers
+- Job Seekers
+- Career Switchers
+- Professionals applying through ATS-based recruitment systems
+
+---
+
+## 🎓 Learning Outcomes
+
+Through this project, I gained hands-on experience with:
+
+- Python Development
+- AI Integration
+- Resume Parsing
+- Prompt Engineering
+- Data Processing
+- Building Interactive Applications
+
+---
+
+
+## 🔮 Future Enhancements
+
+- Multiple Resume Comparison
+- Resume Builder
+- Interview Question Suggestions
+- Industry-Specific Resume Recommendations
+- Advanced ATS Scoring
+
+---
+
+## 👩‍💻 Developer
+
+**Teena Saraswat**
+
+Computer Science Engineer passionate about AI, Data Science, and Software Development.
+
+---
+
+<p align="center">
+  ⭐ If you found this project interesting, consider giving it a star!
+</p>
+
+<p align="center">
+  🚀 Building projects, learning continuously, and growing every day.
+</p>
